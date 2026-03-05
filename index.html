@@ -111,9 +111,7 @@
             }).join(' ');
 
             // Detect task completion
-            if (text.indexOf('All configurations completed!') !== -1 ||
-                text.indexOf('FinishAllConfigurations: all configs completed.') !== -1 ||
-                text.indexOf('ABCD_DONE') !== -1) {
+            if (text.indexOf('ABCD_DONE') !== -1) {
               doneSent = true;
               try { window.parent.postMessage('ABCD_DONE', targetOrigin); } catch (e) {}
               originalLog('[postMessage bridge] ABCD_DONE sent to parent.');

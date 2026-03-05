@@ -59,6 +59,8 @@ public class rewardManager : MonoBehaviour
     public moveplayer player;
     public bool isPractice = false;
     private bool returnToA = false; 
+    public RewardConfiguration config => configData.configurations[currentConfigIdx];
+
     
     void Awake() //V: Awake() takes precedence over any Start() in any of the scripts, so we make sure all rewards are hidden before starting 
     {
@@ -153,7 +155,6 @@ public class rewardManager : MonoBehaviour
 
     int GetStartIndex()
     {
-        var config = configData.configurations[currentConfigIdx];
         return config.IsBackw ? config.SequenceLength - 1 : 0; //V: if the current config is a backward trial, return number corresponding to last reward index, otherwise return 0
     }
     
@@ -178,7 +179,7 @@ public class rewardManager : MonoBehaviour
 
         Debug.Log($"Player position: {playerPosition}");
         Debug.Log($"nextRewardIdx: {nextRewardIdx}");
-        int rewardsToCollect = configData.configurations[currentConfigIdx].SequenceLength;
+        int rewardsToCollect = config.SequenceLength;
         
         if (nextRewardIdx >= rewardsToCollect || nextRewardIdx < 0) //V: < 0 in case we are in backward trials
         {
@@ -201,7 +202,7 @@ public class rewardManager : MonoBehaviour
                 playerPosition,
                 currReward.transform.position,
                 ((char)('A' + nextRewardIdx)).ToString(),
-                configData.configurations[currentConfigIdx].configName,
+                config.configName,
                 distance,
                 atRewardLocation
             );
@@ -212,8 +213,11 @@ public class rewardManager : MonoBehaviour
                 if (returnToA) //V: if this was set true before, turn it off, show the reward and then increase reps completed
                 {
                     returnToA = false;
-                    ShowReward(0);
-                    lastShownRewardIdx = 0;
+
+                    int returnIdx = config.IsBackw ? config.SequenceLength - 1 : 0;
+                    ShowReward(returnIdx);
+                    lastShownRewardIdx = returnIdx;
+
                     player.inputEnabled = false;
                     repsCompleted++;
 
@@ -224,7 +228,6 @@ public class rewardManager : MonoBehaviour
                 }
 
                 Debug.Log("spacebar was pressed at reward location");
-                var config = configData.configurations[currentConfigIdx];
                 int rewardCount = config.SequenceLength;
                 Debug.Log($"Reward {nextRewardIdx + 1}/{rewardCount} found!");
                 
@@ -233,7 +236,7 @@ public class rewardManager : MonoBehaviour
                 
                 nextRewardIdx += config.IsBackw ? -1 : 1; //V: if it's a backward trial, subtract 1 (otherwise add 1)
 
-                if (configData.configurations[currentConfigIdx].IsABCType)
+                if (config.IsABCType)
                 {
                     if (repsCompleted != 0 && nextRewardIdx == 1)
                     {
@@ -247,7 +250,7 @@ public class rewardManager : MonoBehaviour
                     {
                         Debug.Log("return to A");
                         returnToA = true;
-                        nextRewardIdx = 0;
+                        nextRewardIdx = config.IsBackw ? config.SequenceLength - 1 : 0;
                     }
                 } else if (nextRewardIdx >= rewardsToCollect || nextRewardIdx < 0)
                 {
@@ -339,7 +342,7 @@ public class rewardManager : MonoBehaviour
 
         player.CameraController.SetupGameplayCameras();
 
-        if (configData.configurations[currentConfigIdx].IsABCType)
+        if (config.IsABCType)
             StartCoroutine(ShowCue());
         else
             player.inputEnabled = true;
@@ -347,12 +350,12 @@ public class rewardManager : MonoBehaviour
         WebDataLogger.Instance.LogTrialStartEvent(
             currentConfigIdx,
             GetCurrentConfigName(),
-            configData.configurations[currentConfigIdx].IsABCType ? "ABC" : "ABCD",
-            configData.configurations[currentConfigIdx].IsABCType ? "A-B-C" : "A-B-C-D",
+            config.IsABCType ? "ABC" : "ABCD",
+            config.IsABCType ? "A-B-C" : "A-B-C-D",
             repsCompleted
         );
-        
-        Debug.Log($"Starting {configData.configurations[currentConfigIdx].configName}");
+
+        Debug.Log($"Starting {config.configName}");
     }
     
     void ResetTrial()
@@ -463,14 +466,13 @@ public class rewardManager : MonoBehaviour
 
     public Vector3 GetStartPosition()
     {
-        var config = configData.configurations[currentConfigIdx];
         int lastRewardIdx = config.IsBackw ? 0 : config.SequenceLength - 1; //V: A (index 0) if backwards trial, C (index 2) if ABC and D (index 3) if ABCD
         return config.rewardPositions[lastRewardIdx].ToVector3();
     }
 
     public int GetCurrentRewardCount()
     {
-        return configData.configurations[currentConfigIdx].rewardPositions.Count;
+        return config.rewardPositions.Count;
     }
 
     public Vector3 GetRewardWorldPosition(int idx)

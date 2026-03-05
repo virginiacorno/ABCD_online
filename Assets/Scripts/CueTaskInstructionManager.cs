@@ -107,6 +107,7 @@ public class CueTaskInstructionManager : TaskInstructionManagerBase
 
     public override void EndScreen()
     {
+        Debug.Log("ABCD_DONE");
         instructionPanel.SetActive(false);
         movementPanel.SetActive(false);
         newSeqPanel.SetActive(false);
