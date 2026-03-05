@@ -1,0 +1,217 @@
+using UnityEngine;
+using UnityEngine.InputSystem;
+using System.Collections;
+
+public class CameraManager : MonoBehaviour, ICameraController
+{
+
+    //V: create all necessary cameras
+    public Camera firstPersonCamera;
+    public Camera miniMapCamera;
+    
+    //V: create reward manager object for showing rewards
+    public rewardManager rewardManager;
+    
+    //V: create player object
+    public GameObject player;
+
+    //V: backward warning text
+    public GameObject backwWarning;
+    
+    //V: specify timing variables
+    public float[] rewardDisplayTime;
+    public float[] pauseBetweenRewards;
+    public float pauseBetweenSeq = 1f;
+    
+    [Header("Memorization Settings")]
+    public int memorizationRepetitions = 2;  //V: how many times to show the sequence
+
+    [Header("Transition Settings")]
+    public float transitionDuration = 2.5f;  //V: seconds for the smooth camera transition
+
+    public bool isPractice = false;
+
+    void Start()
+    {
+        //V: Initialize timing arrays
+        rewardDisplayTime = new float[] {1.5f, 0.75f};
+        pauseBetweenRewards = new float[] {0.5f, 0.25f};
+        
+        if (!isPractice)
+        {
+            //V: Start with first configuration (index 0)
+            StartNewConfiguration(0);
+        }
+    }
+    
+    //V: Called when starting a new configuration (at start and after completing trials)
+    public void StartNewConfiguration(int configIndex)
+    {
+        //V: Load the new configuration in reward manager
+        rewardManager.LoadConfiguration(configIndex);
+
+        WebDataLogger.Instance.LogConfigurationStart(configIndex, rewardManager.GetCurrentConfigName());
+        
+        //V: Hide player and disable movement initially
+        player.GetComponent<Renderer>().enabled = false;
+        player.GetComponent<moveplayer>().enabled = false;
+        
+        //V: Setup camera for memorization phase
+        SetupMemorizationCamera();
+        
+        Debug.Log($"Memorizing {rewardManager.GetCurrentConfigName()}: Watch the reward sequence!");
+        
+        //V: Start the coroutine to show rewards
+        StartCoroutine(ShowRewardSequence());
+    }
+    
+    public void SetupMemorizationCamera()
+    {
+        rewardManager.HideCue();
+        backwWarning.SetActive(false);
+        firstPersonCamera.enabled = false;
+        miniMapCamera.enabled = true;
+        
+        //V: Put camera as full screen to show rewards
+        miniMapCamera.rect = new Rect(0, 0, 1, 1);
+        miniMapCamera.depth = 0;
+    }
+    
+    public void SetupGameplayCameras()
+    {
+        firstPersonCamera.enabled = true;
+        miniMapCamera.enabled = true;
+
+        //V: Mini-map in top-right corner
+        miniMapCamera.rect = new Rect(0.75f, 0.75f, 0.25f, 0.25f);
+        miniMapCamera.depth = 1;
+    }
+    
+    IEnumerator ShowRewardSequence()
+    {
+        WebDataLogger.Instance.LogMemorizationStart(rewardManager.GetCurrentConfigName(), memorizationRepetitions);
+
+        //V: Show sequence multiple times
+        for (int repetition = 0; repetition < memorizationRepetitions; repetition++)
+        {
+            Debug.Log($"Showing sequence {repetition + 1}/{memorizationRepetitions}");
+            WebDataLogger.Instance.LogMemorizationRepetition(repetition, rewardDisplayTime[repetition], pauseBetweenRewards[repetition]);
+
+            //V: Show each of the 4 rewards in order
+            for (int i = 0; i < 4; i++)
+            {
+                //V: check if reward warning should be displayed
+                if (rewardManager.GetCurrentConfigName().StartsWith("backw"))
+                {
+                    backwWarning.SetActive(true);
+
+                    WebDataLogger.Instance.LogBackwardWarning("onset", rewardManager.GetCurrentConfigName());
+                }
+
+                WebDataLogger.Instance.LogMemorizationReward("reward_onset", ((char)('A' + i)).ToString(), i, repetition);
+
+                rewardManager.ShowReward(i);
+                Debug.Log($"Reward {i + 1}/4");
+
+                yield return new WaitForSeconds(rewardDisplayTime[repetition]);
+
+                WebDataLogger.Instance.LogMemorizationReward("reward_offset", ((char)('A' + i)).ToString(), i, repetition);
+
+                rewardManager.HideReward(i);
+
+                yield return new WaitForSeconds(pauseBetweenRewards[repetition]);
+            }
+
+            //V: Pause between repetitions (but not after the last one)
+            if (repetition < memorizationRepetitions - 1)
+            {
+                yield return new WaitForSeconds(pauseBetweenSeq);
+            }
+        }
+
+        Debug.Log("Memorization complete! Transitioning to first-person view...");
+
+        WebDataLogger.Instance.LogMemorizationComplete();
+
+        yield return new WaitForSeconds(1f);
+
+        //V: Smooth transition instead of instant swap
+        StartCoroutine(TransitionToFirstPerson());
+    }
+
+    public IEnumerator TransitionToFirstPerson()
+    {
+        //V: disable tbackwarning warning and log it
+        if (backwWarning.activeSelf) //V: de-activate the backw warning and log it (if it was active)
+        {
+            WebDataLogger.Instance.LogBackwardWarning("offset", rewardManager.GetCurrentConfigName());
+            backwWarning.SetActive(false);
+        }
+
+        //V: Show the player during the transition
+        player.GetComponent<Renderer>().enabled = true;
+        WebDataLogger.Instance.LogCameraTransition("start", player.transform.position);
+
+        //V: Read start position/rotation from the minimap camera (set in Inspector)
+        Vector3 startPos = miniMapCamera.transform.position;
+        Quaternion startRot = miniMapCamera.transform.rotation;
+
+        //V: Target = the actual first-person camera world position (behind/above the player)
+        Vector3 endPos = firstPersonCamera.transform.position;
+        Quaternion endRot = firstPersonCamera.transform.rotation;
+
+        float elapsed = 0f;
+
+        while (elapsed < transitionDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / transitionDuration));
+
+            miniMapCamera.transform.position = Vector3.Lerp(startPos, endPos, t); //V: function to gradually and smoothly animate
+            miniMapCamera.transform.rotation = Quaternion.Slerp(startRot, endRot, t);
+
+            yield return null;
+        }
+
+        //V: Snap to exact final position
+        miniMapCamera.transform.position = endPos;
+        miniMapCamera.transform.rotation = endRot;
+
+        //V: Restore minimap camera to its original top-down position/rotation before switching
+        miniMapCamera.transform.position = startPos;
+        miniMapCamera.transform.rotation = startRot;
+
+        WebDataLogger.Instance.LogCameraTransition("complete", player.transform.position);
+        StartGamePhase();
+    }
+    
+    void StartGamePhase()
+    {
+        SetupGameplayCameras();
+        
+        player.GetComponent<Renderer>().enabled = true;
+        player.GetComponent<moveplayer>().enabled = true;
+        player.GetComponent<moveplayer>().inputEnabled = true;
+
+        WebDataLogger.Instance.LogGamePhaseStart(player.transform.position, rewardManager.GetCurrentConfigName(), rewardManager.GetCurrentConfigIndex());
+        
+        Debug.Log("Find the rewards in order: A → B → C → D");
+    }
+
+    public void DisableMiniMap()
+    {
+        Debug.Log("DisableMiniMap() called");
+        Debug.Log($"miniMapCamera is null: {miniMapCamera == null}");
+        Debug.Log($"miniMapCamera.enabled: {miniMapCamera != null && miniMapCamera.enabled}");
+        
+        if (miniMapCamera != null && miniMapCamera.enabled)
+        {
+            miniMapCamera.enabled = false;
+            Debug.Log("Minimap disabled");
+        }
+        else
+        {
+            Debug.Log("Minimap was already disabled or is null");
+        }
+    }
+}
