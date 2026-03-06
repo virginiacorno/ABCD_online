@@ -113,8 +113,10 @@
             // Detect task completion
             if (text.indexOf('ABCD_DONE') !== -1) {
               doneSent = true;
-              try { window.parent.postMessage('ABCD_DONE', targetOrigin); } catch (e) {}
-              originalLog('[postMessage bridge] ABCD_DONE sent to parent.');
+              setTimeout(function() {
+                try { window.parent.postMessage('ABCD_DONE', targetOrigin); } catch (e) {}
+                originalLog('[postMessage bridge] ABCD_DONE sent to parent.');
+              }, 3000); // 3-second delay before signalling completion
             }
 
             // Forward WEBGL_DATA logs to parent
