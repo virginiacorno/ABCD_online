@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.InputSystem; 
+using UnityEngine.SceneManagement;
 
 public class rewardManager : MonoBehaviour
 {
@@ -24,10 +25,6 @@ public class rewardManager : MonoBehaviour
     {
         public string configName;
         public List<GridPosition> rewardPositions;
-
-        //V: determine seqeunce length for the ABCD to ABC variant
-        public int SequenceLength => configName.StartsWith("ABC") && !configName.StartsWith("ABCD") ? 3 : 4; //V: if the name starts with ABC and not ABCD, then length = 3, otherwise = 4
-        public bool IsABCType => SequenceLength == 3;
 
         //V: determine if it's a forward or backward trial
         public bool IsBackw => configName.StartsWith("backw") == true;
@@ -58,14 +55,20 @@ public class rewardManager : MonoBehaviour
     public GameObject cueObject;
     public moveplayer player;
     public bool isPractice = false;
-    private bool returnToA = false; 
+    private bool returnToA = false;
+    private bool isABCScene;
     public RewardConfiguration config => configData.configurations[currentConfigIdx];
 
-    
-    void Awake() //V: Awake() takes precedence over any Start() in any of the scripts, so we make sure all rewards are hidden before starting 
+    //V: variabke storing shortest path 
+    private int shortestPath;
+    private int totalSubpaths;
+    private int optimalSubpaths;
+
+    void Awake() //V: Awake() takes precedence over any Start() in any of the scripts, so we make sure all rewards are hidden before starting
     {
+        isABCScene = SceneManager.GetActiveScene().name == "CueTask";
         LoadConfigurationsFromFile();
-        
+
         if (configData != null && configData.configurations.Count > 0)
         {
             LoadConfiguration(0);
@@ -149,13 +152,20 @@ public class rewardManager : MonoBehaviour
             // Reposition player to the start position for this config
             player.SetPosition(GetStartPosition());
 
+            //V: calculate shortest path to reward A 
+            shortestPath = CalculateShortestPath(
+                player.transform.position,
+                config.rewardPositions[nextRewardIdx].ToVector3()
+            );
+            player.stepCount = 0; //V: reset it at the beginning of trials
+
             Debug.Log($"Loaded {configData.configurations[index].configName}");
         }
     }
 
     int GetStartIndex()
     {
-        return config.IsBackw ? config.SequenceLength - 1 : 0; //V: if the current config is a backward trial, return number corresponding to last reward index, otherwise return 0
+        return config.IsBackw ? config.rewardPositions.Count - 1 : 0; //V: if the current config is a backward trial, return number corresponding to last reward index, otherwise return 0
     }
     
     public int GetTotalConfigurations()
@@ -179,7 +189,7 @@ public class rewardManager : MonoBehaviour
 
         Debug.Log($"Player position: {playerPosition}");
         Debug.Log($"nextRewardIdx: {nextRewardIdx}");
-        int rewardsToCollect = config.SequenceLength;
+        int rewardsToCollect = config.rewardPositions.Count;
         
         if (nextRewardIdx >= rewardsToCollect || nextRewardIdx < 0) //V: < 0 in case we are in backward trials
         {
@@ -204,17 +214,26 @@ public class rewardManager : MonoBehaviour
                 ((char)('A' + nextRewardIdx)).ToString(),
                 config.configName,
                 distance,
-                atRewardLocation
+                atRewardLocation,
+                atRewardLocation ? player.stepCount : 0,
+                atRewardLocation ? shortestPath : 0,
+                atRewardLocation ? player.stepCount == shortestPath : false
             );
             
             // Only process reward if at correct location
             if (atRewardLocation)
             {
+                //V: increase number of subpath completed and check if it was optimal, then reset player step count
+                totalSubpaths++;
+                if (player.stepCount == shortestPath)
+                    optimalSubpaths++;
+                player.stepCount = 0;
+
                 if (returnToA) //V: if this was set true before, turn it off, show the reward and then increase reps completed
                 {
                     returnToA = false;
 
-                    int returnIdx = config.IsBackw ? config.SequenceLength - 1 : 0;
+                    int returnIdx = config.IsBackw ? config.rewardPositions.Count - 1 : 0;
                     ShowReward(returnIdx);
                     lastShownRewardIdx = returnIdx;
 
@@ -228,7 +247,7 @@ public class rewardManager : MonoBehaviour
                 }
 
                 Debug.Log("spacebar was pressed at reward location");
-                int rewardCount = config.SequenceLength;
+                int rewardCount = config.rewardPositions.Count;
                 Debug.Log($"Reward {nextRewardIdx + 1}/{rewardCount} found!");
                 
                 ShowReward(nextRewardIdx);
@@ -236,7 +255,17 @@ public class rewardManager : MonoBehaviour
                 
                 nextRewardIdx += config.IsBackw ? -1 : 1; //V: if it's a backward trial, subtract 1 (otherwise add 1)
 
-                if (config.IsABCType)
+                //V: calculate optimal steps for next subpath (if there is a reward)
+                if (nextRewardIdx >= 0 && nextRewardIdx < rewardsToCollect)
+                {
+                    shortestPath = CalculateShortestPath(
+                        player.transform.position,
+                        config.rewardPositions[nextRewardIdx].ToVector3()
+                    );
+                    Debug.Log($"shortest path = {shortestPath}");
+                }
+
+                if (config.configName.StartsWith("ABC") && !config.configName.StartsWith("ABCD"))
                 {
                     if (repsCompleted != 0 && nextRewardIdx == 1)
                     {
@@ -250,7 +279,11 @@ public class rewardManager : MonoBehaviour
                     {
                         Debug.Log("return to A");
                         returnToA = true;
-                        nextRewardIdx = config.IsBackw ? config.SequenceLength - 1 : 0;
+                        nextRewardIdx = config.IsBackw ? config.rewardPositions.Count - 1 : 0;
+                        shortestPath = CalculateShortestPath(
+                            player.transform.position,
+                            config.rewardPositions[nextRewardIdx].ToVector3()
+                        );
                     }
                 } else if (nextRewardIdx >= rewardsToCollect || nextRewardIdx < 0)
                 {
@@ -304,13 +337,17 @@ public class rewardManager : MonoBehaviour
 
                 if (camManager != null && camManager.enabled)
                 {
-                    instructionManager.ShowFeedback(); 
-                } 
+                    instructionManager.ShowFeedback(optimalSubpaths, totalSubpaths);
+                    totalSubpaths = 0;
+                    optimalSubpaths = 0;
+                }
                 else if (freeNavCam != null && freeNavCam.enabled)
                 {
                     LoadConfiguration(currentConfigIdx);
                     Debug.Log("Calling new sequence");
-                    instructionManager.ShowFeedback();
+                    instructionManager.ShowFeedback(optimalSubpaths, totalSubpaths);
+                    totalSubpaths = 0;
+                    optimalSubpaths = 0;
                 }
   
             }
@@ -342,7 +379,7 @@ public class rewardManager : MonoBehaviour
 
         player.CameraController.SetupGameplayCameras();
 
-        if (config.IsABCType)
+        if (isABCScene && config.configName.StartsWith("ABC") && !config.configName.StartsWith("ABCD"))
             StartCoroutine(ShowCue());
         else
             player.inputEnabled = true;
@@ -350,8 +387,8 @@ public class rewardManager : MonoBehaviour
         WebDataLogger.Instance.LogTrialStartEvent(
             currentConfigIdx,
             GetCurrentConfigName(),
-            config.IsABCType ? "ABC" : "ABCD",
-            config.IsABCType ? "A-B-C" : "A-B-C-D",
+            isABCScene ? "ABC" : "ABCD",
+            isABCScene ? "A-B-C" : "A-B-C-D",
             repsCompleted
         );
 
@@ -367,6 +404,12 @@ public class rewardManager : MonoBehaviour
         returnToA = false;
 
         player.inputEnabled = true;
+
+        shortestPath = CalculateShortestPath(
+            player.transform.position,
+            config.rewardPositions[nextRewardIdx].ToVector3()
+        );
+        player.stepCount = 0;
 
         Debug.Log($"Starting trial {repsCompleted + 1}/{configData.trialsPerConfig} of Config {currentConfigIdx}");
     }
@@ -466,7 +509,30 @@ public class rewardManager : MonoBehaviour
 
     public Vector3 GetStartPosition()
     {
-        int lastRewardIdx = config.IsBackw ? 0 : config.SequenceLength - 1; //V: A (index 0) if backwards trial, C (index 2) if ABC and D (index 3) if ABCD
+        if (isABCScene)
+        {
+            Vector3[] allGridPositions = new Vector3[]
+            {
+                new Vector3(-5.3f, 1f, 5f),    new Vector3(-5.3f, 1f, 15.3f), new Vector3(-5.3f, 1f, 25.6f),
+                new Vector3(5f,    1f, 5f),    new Vector3(5f,    1f, 15.3f), new Vector3(5f,    1f, 25.6f),
+                new Vector3(15.3f, 1f, 5f),    new Vector3(15.3f, 1f, 15.3f), new Vector3(15.3f, 1f, 25.6f)
+            };
+
+            List<Vector3> rewardPositions = new List<Vector3>();
+            foreach (var rp in config.rewardPositions)
+                rewardPositions.Add(rp.ToVector3());
+
+            List<Vector3> validPositions = new List<Vector3>();
+            foreach (var pos in allGridPositions)
+            {
+                if (!rewardPositions.Contains(pos))
+                    validPositions.Add(pos);
+            }
+
+            return validPositions[Random.Range(0, validPositions.Count)];
+        }
+
+        int lastRewardIdx = config.IsBackw ? 0 : config.rewardPositions.Count - 1; //V: A (index 0) if backwards trial, C (index 2) if ABC and D (index 3) if ABCD
         return config.rewardPositions[lastRewardIdx].ToVector3();
     }
 
@@ -480,5 +546,13 @@ public class rewardManager : MonoBehaviour
         if (currentRewardObjects != null && idx >= 0 && idx < currentRewardObjects.Length && currentRewardObjects[idx] != null)
             return currentRewardObjects[idx].transform.position;
         return Vector3.zero;
+    }
+
+    //V: helper function to calculate shortest path (Manhattan distance)
+    int CalculateShortestPath(Vector3 from, Vector3 to)
+    {
+        return Mathf.RoundToInt(
+            (Mathf.Abs(from.x - to.x) + Mathf.Abs(from.z - to.z)) / 10.3f //V: divide by step size to get number of my steps needed
+        );
     }
 }

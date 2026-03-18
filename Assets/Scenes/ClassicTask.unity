@@ -1883,7 +1883,7 @@ GameObject:
   - component: {fileID: 691925586}
   - component: {fileID: 691925585}
   m_Layer: 5
-  m_Name: InstructionPanel
+  m_Name: FeedbackPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2553,6 +2553,7 @@ MonoBehaviour:
   rewardManager: {fileID: 1972259391}
   _cameraController: {fileID: 206655264}
   inputEnabled: 1
+  stepCount: 0
 --- !u!114 &918918313
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2565,10 +2566,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0fd14885425440de97cb985e4687b1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ContinuousMovement
-  moveSpeed: 5
-  rotationSpeed: 100
-  rewardManager: {fileID: 1972259391}
-  cameraManager: {fileID: 206655264}
 --- !u!1 &920731275
 GameObject:
   m_ObjectHideFlags: 0
@@ -4627,7 +4624,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c5e4cc4586714f079c432bb4e621ac5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::rewardManager
-  configurationFile: {fileID: 4900000, guid: ccbbc5cfd5049463ab23f869b065be0c, type: 3}
+  configurationFile: {fileID: 4900000, guid: 9a6c3dbce9a89473ab412109d0ee99fa, type: 3}
   rewardPrefab: {fileID: 8944818978998613366, guid: 724d237596c0e5f4e96db63a4516d303, type: 3}
   instructionManager: {fileID: 1061503323}
   cueObject: {fileID: 150348452}

@@ -24,6 +24,9 @@ public class moveplayer : MonoBehaviour
     //V: variables to keep track of logging
     private bool rotationStartLogged = false;
     private bool movementStartLogged = false;
+
+    //V: step count for feedback
+    public int stepCount = 0;
     
     void Start()
     {
@@ -56,6 +59,7 @@ public class moveplayer : MonoBehaviour
         targetRotation = Quaternion.identity;
         isMoving = false;
         isRotating = false;
+
     }
     
     void CheckInput() //V: check keyboard input and set the rotation and movement targets accordingly
@@ -75,6 +79,7 @@ public class moveplayer : MonoBehaviour
             {
                 targetPosition = potentialTarget;
                 isMoving = true;
+                stepCount ++;
             }
             CameraController.DisableMiniMap();
             keyPressed = "up";

@@ -228,6 +228,9 @@ public class WebDataLogger : MonoBehaviour
         public string config_name;
         public float distance_to_reward;
         public bool found_reward;
+        public int player_steps;
+        public int shortest_path;
+        public bool is_optimal;
         public double t_global;
     }
 
@@ -595,7 +598,7 @@ public class WebDataLogger : MonoBehaviour
         });
     }
 
-    public void LogRewardCheck(Vector3 playerPos, Vector3 rewPos, string state, string configName, float distance, bool found)
+    public void LogRewardCheck(Vector3 playerPos, Vector3 rewPos, string state, string configName, float distance, bool found, int playerSteps = 0, int shortestPath = 0, bool isOptimal = false)
     {
         SendToJavaScript(new RewardCheckData
         {
@@ -605,6 +608,7 @@ public class WebDataLogger : MonoBehaviour
             rew_loc_x = rewPos.x, rew_loc_z = rewPos.z,
             state = state, config_name = configName,
             distance_to_reward = distance, found_reward = found,
+            player_steps = playerSteps, shortest_path = shortestPath, is_optimal = isOptimal,
             t_global = GetUnixTimestamp()
         });
     }

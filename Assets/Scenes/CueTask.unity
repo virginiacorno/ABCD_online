@@ -2304,6 +2304,7 @@ MonoBehaviour:
   rewardManager: {fileID: 1972259391}
   _cameraController: {fileID: 206655266}
   inputEnabled: 1
+  stepCount: 0
 --- !u!114 &918918313
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5557,7 +5558,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c5e4cc4586714f079c432bb4e621ac5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::rewardManager
-  configurationFile: {fileID: 4900000, guid: 72ce225e2022f4cffa79b6fbbfaaf2d0, type: 3}
+  configurationFile: {fileID: 4900000, guid: 63410d264799d45f481cf3104eaa4c88, type: 3}
   rewardPrefab: {fileID: 8944818978998613366, guid: 724d237596c0e5f4e96db63a4516d303, type: 3}
   instructionManager: {fileID: 757205549}
   cueObject: {fileID: 1202984419}

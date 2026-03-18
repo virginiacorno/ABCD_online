@@ -33,10 +33,10 @@ public abstract class TaskInstructionManagerBase : MonoBehaviour
         WebDataLogger.Instance.LogScreenEvent("movement", "onset");
     }
 
-    public void ShowFeedback()
+    public void ShowFeedback(int optimal, int total)
     {
-        int percentage = Random.Range(0, 101);
-        feedbackText.text = $"This round you found {percentage}% of gems using the smallest number of steps";
+        float percentage = total > 0 ? (float)optimal / total * 100f : 0f;
+        feedbackText.text = $"This round you found {Mathf.RoundToInt(percentage)}% of gems using the smallest number of steps";
         feedbackPanel.SetActive(true);
 
         instructionPanel.SetActive(false);
