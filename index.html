@@ -12,18 +12,6 @@
 </head>
 <body>
   <canvas id="unity-canvas" width=1920 height=1080 tabindex="-1"></canvas>
-  <!-- TEMPORARY TEST BUTTON - REMOVE AFTER TESTING -->
-  <button id="test-done-btn" style="position:fixed; top:10px; right:10px; z-index:9999; padding:10px; background:red; color:white; font-size:16px;">
-    TEST ABCD_DONE
-  </button>
-  <script>
-    document.getElementById('test-done-btn').addEventListener('click', function() {
-      console.log('ABCD_DONE');
-      window.parent.postMessage('ABCD_DONE', '*');
-      console.log('TEST: both ABCD_DONE signals fired');
-    });
-  </script>
-  <!-- END TEMPORARY TEST BUTTON -->
 
   <script>
   /* ============================================================
@@ -49,7 +37,7 @@
           setTimeout(function() {
             try { window.parent.postMessage('ABCD_DONE', '*'); } catch(e) {}
             originalLog('[postMessage bridge] ABCD_DONE sent to parent (console path).');
-          }, 500); // 500ms — enough for end screen, safe for Pavlovia
+          }, 500);
         }
 
         // Catch [WEBGL_DATA] logs as fallback if jslib isn't active yet
@@ -68,8 +56,8 @@
 
   /* ============================================================
      STEP 2: postMessage listener — catches ABCD_DONE arriving
-     via the jslib postMessage path, and forwards UNITY_DATA
-     to the Pavlovia parent. Also handles SET_PARTICIPANT.
+     via the jslib postMessage path, forwards UNITY_DATA to
+     Pavlovia parent, and handles SET_PARTICIPANT.
      ============================================================ */
   var doneSentViaMessage = false;
   var unityInstance = null;
@@ -87,7 +75,7 @@
       setTimeout(function() {
         try { window.parent.postMessage('ABCD_DONE', '*'); } catch(e) {}
         console.log('[postMessage bridge] ABCD_DONE forwarded to parent (message path).');
-      }, 500); // match the same delay
+      }, 500);
       return;
     }
 
@@ -114,11 +102,31 @@
       trySetInfo();
     }
   });
+
+  /* ============================================================
+     STEP 3: Fallback — if player closes tab or exits browser
+     before completing the task, still trigger save in Pavlovia
+     ============================================================ */
+  var unloadFired = false;
+  window.addEventListener('beforeunload', function() {
+    if (!unloadFired) {
+      unloadFired = true;
+      try { window.parent.postMessage('ABCD_DONE', '*'); } catch(e) {}
+    }
+  });
+
+  // Secondary fallback using pagehide (more reliable on mobile/Safari)
+  window.addEventListener('pagehide', function() {
+    if (!unloadFired) {
+      unloadFired = true;
+      try { window.parent.postMessage('ABCD_DONE', '*'); } catch(e) {}
+    }
+  });
   </script>
 
   <script>
   /* ============================================================
-     STEP 3: Load Unity via onload callback — never call
+     STEP 4: Load Unity via onload callback — never call
      createUnityInstance inline after <script src>
      ============================================================ */
   if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
