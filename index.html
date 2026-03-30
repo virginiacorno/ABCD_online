@@ -102,31 +102,11 @@
       trySetInfo();
     }
   });
-
-  /* ============================================================
-     STEP 3: Fallback — if player closes tab or exits browser
-     before completing the task, still trigger save in Pavlovia
-     ============================================================ */
-  var unloadFired = false;
-  window.addEventListener('beforeunload', function() {
-    if (!unloadFired) {
-      unloadFired = true;
-      try { window.parent.postMessage('ABCD_DONE', '*'); } catch(e) {}
-    }
-  });
-
-  // Secondary fallback using pagehide (more reliable on mobile/Safari)
-  window.addEventListener('pagehide', function() {
-    if (!unloadFired) {
-      unloadFired = true;
-      try { window.parent.postMessage('ABCD_DONE', '*'); } catch(e) {}
-    }
-  });
   </script>
 
   <script>
   /* ============================================================
-     STEP 4: Load Unity via onload callback — never call
+     STEP 3: Load Unity via onload callback — never call
      createUnityInstance inline after <script src>
      ============================================================ */
   if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
