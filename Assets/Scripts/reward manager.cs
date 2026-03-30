@@ -50,7 +50,7 @@ public class rewardManager : MonoBehaviour
     private GameObject[] currentRewardObjects; //V: array containing sequence of rewards
     private int currentConfigIdx = 0;
     private int nextRewardIdx = 0;
-    private int repsCompleted = 0;
+    public int repsCompleted = 0;
     private int lastShownRewardIdx = -1;
     public GameObject cueObject;
     public moveplayer player;

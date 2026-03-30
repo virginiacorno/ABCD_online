@@ -104,7 +104,7 @@ public class moveplayer : MonoBehaviour
         }
 
         if (!string.IsNullOrEmpty(keyPressed))
-            WebDataLogger.Instance.LogKeyPressEvent(keyPressed, oldPosition);
+            WebDataLogger.Instance.LogKeyPressEvent(keyPressed, oldPosition, rewardManager.GetCurrentConfigIndex(), rewardManager.repsCompleted);
     }
 
     void SetTarget(float relativeYRotation) //V: calculate rotation target relative to current position and set isRotating to true
