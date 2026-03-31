@@ -54,6 +54,38 @@
     };
   })();
 
+  </script>
+
+  <!-- ============================================================
+       STEP 1.5: SendDataToJS shim — ensures the function exists
+       before Unity loads and tries to call it
+       ============================================================ -->
+  <script>
+  (function(){
+    if (typeof window.SendDataToJS !== 'undefined') {
+      console.log('[Shim] SendDataToJS already present');
+      return;
+    }
+    window.SendDataToJS = function(payload) {
+      try {
+        var s = typeof payload === 'string' ? payload : JSON.stringify(payload);
+        console.log('[WEBGL_DATA] ' + s);
+        try {
+          var obj = JSON.parse(s);
+          window.parent.postMessage({ type: 'UNITY_DATA', data: obj }, '*');
+        } catch (e) {
+          window.parent.postMessage({ type: 'UNITY_DATA', data: s }, '*');
+        }
+      } catch (e) {
+        console.error('[Shim] SendDataToJS error', e);
+      }
+    };
+    console.log('[Shim] SendDataToJS installed');
+  })();
+  </script>
+
+  <script>
+
   /* ============================================================
      STEP 2: postMessage listener — catches ABCD_DONE arriving
      via the jslib postMessage path, forwards UNITY_DATA to
