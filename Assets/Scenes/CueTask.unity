@@ -5287,12 +5287,11 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Goal: uncover 4 gems arranged in a loop in the correct order. Be careful!
-    A cue may tell you you only need 3 gems.
-
-
-    Be careful! Gems will only be
-    uncovered successfully if they are found in the correct order.'
+  m_text: "Goal: uncover 4 gems arranged in a loop in the correct order. \nBe careful!
+    A cue may tell you you only need 3 gems.\n\nYou will need to repeat each loop
+    3 times before a message tells you gems have \nbeen hidden somwhere else.\n\nBe
+    careful! Gems will only be uncovered successfully if they are found in the correct
+    order."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -5557,6 +5556,7 @@ MonoBehaviour:
   configurationFile: {fileID: 4900000, guid: 63410d264799d45f481cf3104eaa4c88, type: 3}
   rewardPrefab: {fileID: 8944818978998613366, guid: 724d237596c0e5f4e96db63a4516d303, type: 3}
   instructionManager: {fileID: 757205549}
+  repsCompleted: 0
   cueObject: {fileID: 1202984419}
   player: {fileID: 918918312}
   isPractice: 0
