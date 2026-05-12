@@ -10,6 +10,7 @@ public abstract class TaskInstructionManagerBase : MonoBehaviour
     public GameObject feedbackPanel;
     public TMP_Text feedbackText;
     public GameObject newSeqPanel;
+    public GameObject endPanel;
     public rewardManager rewardManager;
     public moveplayer player;
 
@@ -19,6 +20,7 @@ public abstract class TaskInstructionManagerBase : MonoBehaviour
         movementPanel.SetActive(false);
         feedbackPanel.SetActive(false);
         newSeqPanel.SetActive(false);
+        endPanel.SetActive(false);
         Time.timeScale = 0f;
         WebDataLogger.Instance.LogScreenEvent("instruction", "onset");
     }
@@ -29,6 +31,7 @@ public abstract class TaskInstructionManagerBase : MonoBehaviour
         instructionPanel.SetActive(false);
         feedbackPanel.SetActive(false);
         newSeqPanel.SetActive(false);
+        endPanel.SetActive(false);
         Time.timeScale = 0f;
         WebDataLogger.Instance.LogScreenEvent("movement", "onset");
     }
@@ -42,6 +45,7 @@ public abstract class TaskInstructionManagerBase : MonoBehaviour
         instructionPanel.SetActive(false);
         movementPanel.SetActive(false);
         newSeqPanel.SetActive(false);
+        endPanel.SetActive(false);
         Time.timeScale = 0f;
         WebDataLogger.Instance.LogScreenEvent("feedback", "onset");
     }
@@ -52,6 +56,7 @@ public abstract class TaskInstructionManagerBase : MonoBehaviour
         movementPanel.SetActive(false);
         instructionPanel.SetActive(false);
         feedbackPanel.SetActive(false);
+        endPanel.SetActive(false);
         Time.timeScale = 0f;
         WebDataLogger.Instance.LogScreenEvent("new_sequence", "onset");
     }

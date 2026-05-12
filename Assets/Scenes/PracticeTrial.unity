@@ -2170,7 +2170,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::moveplayer
   gridStepSize: 10.3
-  moveSpeed: 5
+  moveSpeed: 7
   rotationSpeed: 100
   rewardManager: {fileID: 1972259391}
   _cameraController: {fileID: 206655264}
@@ -2188,12 +2188,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0fd14885425440de97cb985e4687b1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ContinuousMovement
-  moveSpeed: 5
-  rotationSpeed: 100
-  rewardManager: {fileID: 1972259391}
-  cameraManager: {fileID: 206655264}
-  lastPosition: {x: 0, y: 0, z: 0}
-  hasMoved: 0
 --- !u!1 &938595166
 GameObject:
   m_ObjectHideFlags: 0
@@ -3497,7 +3491,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 392ed3fe9ba0e440dac43b04fdcdf793, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ParticipantInfoReader
-  dataLogger: {fileID: 1794326261}
 --- !u!1 &1850202878
 GameObject:
   m_ObjectHideFlags: 0
@@ -3756,11 +3749,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Goal: uncover 4 gems arranged in a loop in the correct order. Be careful!
-    A cue may tell you you only need 3 gems.\n\nYou will need to repeat each loop
-    3 times before a message tells you gems have \nbeen hidden somwhere else.\n\nBe
-    careful! Gems will only be uncovered successfully if they are found in the correct
-    order."
+  m_text: "Goal: uncover 4 gems arranged in a loop in the correct order. \n\nYou
+    will need to repeat each loop 2 times before a message tells you gems have \nbeen
+    hidden somwhere else.\n\nBe careful! Gems will only be uncovered successfully
+    if they are found in the correct order."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

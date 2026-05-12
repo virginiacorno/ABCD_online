@@ -62,6 +62,10 @@ public class ClassicTaskInstructionManager : TaskInstructionManagerBase
     //V: call loading of the next scene instead of displaying an end screen
     public override void EndScreen()
     {
-        SceneSequenceManager.Instance.GoToCueTask();
+        Debug.Log("ABCD_DONE");
+        instructionPanel.SetActive(false);
+        movementPanel.SetActive(false);
+        newSeqPanel.SetActive(false);
+        endPanel.SetActive(true);
     }
 }
