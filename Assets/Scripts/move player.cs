@@ -6,7 +6,7 @@ public class moveplayer : MonoBehaviour
     private Vector3 _moveFrom;
 
     public float gridStepSize = 10.3f;
-    public float moveSpeed = 5.0f;
+    public float moveSpeed = 7.0f;
     public float rotationSpeed = 100f;
 
     public rewardManager rewardManager;

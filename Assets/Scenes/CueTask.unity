@@ -2299,7 +2299,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::moveplayer
   gridStepSize: 10.3
-  moveSpeed: 5
+  moveSpeed: 7
   rotationSpeed: 100
   rewardManager: {fileID: 1972259391}
   _cameraController: {fileID: 206655266}

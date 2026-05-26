@@ -1,3 +1,4 @@
+
 using UnityEngine;
 using System.Runtime.InteropServices;
 using System;
@@ -234,6 +235,17 @@ public class WebDataLogger : MonoBehaviour
         public double t_global;
     }
 
+    [System.Serializable]
+    public class PackageAssignmentData
+    {
+        public string event_type = "package_assignment";
+        public string participant; public string study_id; public string session_id;
+        public string session = "001"; public string date;
+        public int package_number;
+        public string package_id;
+        public double t_global;
+    }
+
     // Participant info (set from JavaScript on startup)
     private string participantId;
     private string studyId;
@@ -290,7 +302,7 @@ public class WebDataLogger : MonoBehaviour
         SendToJavaScript(data);
     }
 
-    public void LogCue(int round, int rep)
+    public void LogCue(int round, int rep) //V: maybe more relevant for fMRI (tho player is blocked for a few seconds)
     {
         double now = GetUnixTimestamp();
 
@@ -320,7 +332,7 @@ public class WebDataLogger : MonoBehaviour
         });
     }
 
-    public void LogCameraTransition(string phase, Vector3 playerPos)
+    public void LogCameraTransition(string phase, Vector3 playerPos) //V: maybe more relevant to fMRI
     {
         SendToJavaScript(new CameraTransitionData
         {
@@ -342,7 +354,7 @@ public class WebDataLogger : MonoBehaviour
         });
     }
 
-    public void LogMemorizationStart(string configName, int repetitions)
+    public void LogMemorizationStart(string configName, int repetitions) //V: maybe more relevant to fMRI
     {
         SendToJavaScript(new MemorizationData
         {
@@ -353,7 +365,7 @@ public class WebDataLogger : MonoBehaviour
         });
     }
 
-    public void LogMemorizationRepetition(int repNum, float displayTime, float pauseTime)
+    public void LogMemorizationRepetition(int repNum, float displayTime, float pauseTime) //V: maybe more relevant to fMRI
     {
         SendToJavaScript(new MemorizationData
         {
@@ -365,7 +377,7 @@ public class WebDataLogger : MonoBehaviour
         });
     }
 
-    public void LogMemorizationReward(string rewardPhase, string rewardLetter, int rewardIndex, int repNum)
+    public void LogMemorizationReward(string rewardPhase, string rewardLetter, int rewardIndex, int repNum) //V: maybe more relevant to fMRI
     {
         SendToJavaScript(new MemorizationData
         {
@@ -377,7 +389,7 @@ public class WebDataLogger : MonoBehaviour
         });
     }
 
-    public void LogMemorizationComplete()
+    public void LogMemorizationComplete() //V: maybe more relevant to fMRI
     {
         SendToJavaScript(new MemorizationData
         {
@@ -387,7 +399,7 @@ public class WebDataLogger : MonoBehaviour
         });
     }
 
-    public void LogBackwardWarning(string phase, string configName)
+    public void LogBackwardWarning(string phase, string configName) //V: maybe more relevant to fMRI + no backw tasks in this pilot
     {
         SendToJavaScript(new BackwardWarningData
         {
@@ -463,7 +475,18 @@ public class WebDataLogger : MonoBehaviour
         });
     }
 
-    public void LogKeyPressEvent(string key, Vector3 playerPos, int round, int rep)
+    public void LogPackageAssignment(int packageNumber, string packageId)
+    {
+        SendToJavaScript(new PackageAssignmentData
+        {
+            participant = participantId, study_id = studyId, session_id = sessionId,
+            date = DateTime.UtcNow.ToString("yyyy-MM-dd"),
+            package_number = packageNumber, package_id = packageId,
+            t_global = GetUnixTimestamp()
+        });
+    }
+
+    public void LogKeyPressEvent(string key, Vector3 playerPos, int round, int rep) //V: maybe more needed for fMRI (movements and space bar presses are already recorderd)
     {
         SendToJavaScript(new KeyPressData
         {

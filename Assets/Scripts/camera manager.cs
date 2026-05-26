@@ -97,8 +97,8 @@ public class CameraManager : MonoBehaviour, ICameraController
             Debug.Log($"Showing sequence {repetition + 1}/{memorizationRepetitions}");
             WebDataLogger.Instance.LogMemorizationRepetition(repetition, rewardDisplayTime[repetition], pauseBetweenRewards[repetition]);
 
-            //V: Show each of the 4 rewards in order
-            for (int i = 0; i < 4; i++)
+            //V: Show each reward in order
+            for (int i = 0; i < rewardManager.GetCurrentRewardCount(); i++)
             {
                 //V: check if reward warning should be displayed
                 if (rewardManager.GetCurrentConfigName().StartsWith("backw"))

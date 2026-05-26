@@ -6,36 +6,6 @@ using UnityEngine.SceneManagement;
 
 public class rewardManager : MonoBehaviour
 {
-
-    [System.Serializable]
-    public class GridPosition
-    {
-        public float x;  // Unity X (left/right)
-        public float y;  // Unity Y (height)
-        public float z;  // Unity Z (forward/back)
-        
-        public Vector3 ToVector3()
-        {
-            return new Vector3(x, y, z);
-        }
-    }
-    
-    [System.Serializable]
-    public class RewardConfiguration
-    {
-        public string configName;
-        public List<GridPosition> rewardPositions;
-
-        //V: determine if it's a forward or backward trial
-        public bool IsBackw => configName.StartsWith("backw") == true;
-    }
-    
-    [System.Serializable]
-    public class ConfigurationData
-    {
-        public List<RewardConfiguration> configurations;
-        public int trialsPerConfig;
-    }
     
     [Header("Configuration File")]
     public TextAsset configurationFile;
@@ -46,7 +16,9 @@ public class rewardManager : MonoBehaviour
     [Header("UI References")]
     public TaskInstructionManagerBase instructionManager;
     
-    private ConfigurationData configData;
+    private List<TaskConfig> _activeTasks;
+    private int _trialsPerTask;
+
     private GameObject[] currentRewardObjects; //V: array containing sequence of rewards
     private int currentConfigIdx = 0;
     private int nextRewardIdx = 0;
@@ -57,7 +29,7 @@ public class rewardManager : MonoBehaviour
     public bool isPractice = false;
     private bool returnToA = false;
     private bool isABCScene;
-    public RewardConfiguration config => configData.configurations[currentConfigIdx];
+    public TaskConfig config => _activeTasks[currentConfigIdx];
 
     //V: variabke storing shortest path 
     private int shortestPath;
@@ -67,9 +39,9 @@ public class rewardManager : MonoBehaviour
     void Awake() //V: Awake() takes precedence over any Start() in any of the scripts, so we make sure all rewards are hidden before starting
     {
         isABCScene = SceneManager.GetActiveScene().name == "CueTask";
-        LoadConfigurationsFromFile();
+        LoadTasks();
 
-        if (configData != null && configData.configurations.Count > 0)
+        if (_activeTasks != null && _activeTasks.Count > 0)
         {
             LoadConfiguration(0);
             HideCue();
@@ -83,31 +55,52 @@ public class rewardManager : MonoBehaviour
 
     void Start()
     {
-        if (configData != null && configData.configurations.Count > 0)
+        if (_activeTasks != null && _activeTasks.Count > 0)
         {
-            Debug.Log($"Starting {configData.configurations[currentConfigIdx].configName}");
-            Debug.Log($"Total configurations loaded: {configData.configurations.Count}");
+            Debug.Log($"Starting {_activeTasks[currentConfigIdx].configName}");
+            Debug.Log($"Total tasks loaded: {_activeTasks.Count}");
         }
     }
 
-    void LoadConfigurationsFromFile()
+    void LoadTasks()
     {
-        if (configurationFile == null)
+        Debug.Log($"[rewardManager] isPractice={isPractice}, PackageManager={TaskPackageManager.Instance != null}, isABCScene={isABCScene}");
+
+        if (isPractice)
         {
-            Debug.LogError("Configuration file not assigned!");
-            return;
+            if (configurationFile == null)
+            {
+                Debug.LogError("Configuration file not assigned!");
+                return;
+            }
+            try
+            {
+                var data = JsonUtility.FromJson<PackageData>(configurationFile.text);
+                Debug.Log($"Practice tasks loaded: {data?.tasks?.Count}");  
+                _activeTasks = data.tasks;
+                _trialsPerTask = data.trialsPerTask;
+                Debug.Log($"[rewardManager] Loaded {_activeTasks.Count} tasks from file");
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"Failed to load configuration file: {e.Message}");
+            }
         }
-        
-        try
+        else if (TaskPackageManager.Instance != null)
         {
-            configData = JsonUtility.FromJson<ConfigurationData>(configurationFile.text);
-            Debug.Log($"Loaded {configData.configurations.Count} configurations from file");
+            int targetPart = isABCScene ? 2 : 1;
+            _activeTasks = targetPart == 1
+                ? TaskPackageManager.Instance.GetPart1Tasks()
+                : TaskPackageManager.Instance.GetPart2Tasks();
+            _trialsPerTask = TaskPackageManager.Instance.Data.trialsPerTask;
+            Debug.Log($"[rewardManager] Loaded {_activeTasks.Count} tasks for part {targetPart}");
         }
-        catch (System.Exception e)
+        else
         {
-            Debug.LogError($"Failed to load configuration file: {e.Message}");
+            Debug.LogError("[rewardManager] No TaskPackageManager found!");
         }
     }
+
 
     //V: need repetition to ensure some delay between end of previous trial and loading new configurations
     public void LoadConfiguration()
@@ -117,7 +110,7 @@ public class rewardManager : MonoBehaviour
 
     public void LoadConfiguration(int index)
     {
-        if (index >= 0 && index < configData.configurations.Count)
+        if (index >= 0 && index < _activeTasks.Count)
         {
             currentConfigIdx = index;
             nextRewardIdx = GetStartIndex();
@@ -134,7 +127,7 @@ public class rewardManager : MonoBehaviour
                 }
             }
             
-            List<GridPosition> positions = configData.configurations[index].rewardPositions;
+            List<GridPosition> positions = _activeTasks[index].rewardPositions;
             
             // Create new rewards at specified positions
             currentRewardObjects = new GameObject[positions.Count];
@@ -142,7 +135,7 @@ public class rewardManager : MonoBehaviour
             {
                 Vector3 worldPos = positions[i].ToVector3();
                 currentRewardObjects[i] = Instantiate(rewardPrefab, worldPos, Quaternion.identity);
-                currentRewardObjects[i].name = $"Reward_{(char)('A' + i)}_{configData.configurations[index].configName}";
+                currentRewardObjects[i].name = $"Reward_{(char)('A' + i)}_{_activeTasks[index].configName}";
                 //currentRewardObjects[i].GetComponent<Renderer>().enabled = false;
                 currentRewardObjects[i].SetActive(false);
 
@@ -159,7 +152,7 @@ public class rewardManager : MonoBehaviour
             );
             player.stepCount = 0; //V: reset it at the beginning of trials
 
-            Debug.Log($"Loaded {configData.configurations[index].configName}");
+            Debug.Log($"Loaded {_activeTasks[index].configName}");
         }
     }
 
@@ -170,12 +163,12 @@ public class rewardManager : MonoBehaviour
     
     public int GetTotalConfigurations()
     {
-        return configData.configurations.Count;
+        return _activeTasks.Count;
     }
     
     public string GetCurrentConfigName()
     {
-        return configData.configurations[currentConfigIdx].configName;
+        return _activeTasks[currentConfigIdx].configName;
     }
 
     public int GetCurrentConfigIndex()
@@ -238,9 +231,9 @@ public class rewardManager : MonoBehaviour
                     lastShownRewardIdx = returnIdx;
 
                     player.inputEnabled = false;
-                    repsCompleted++;
+                    WebDataLogger.Instance.LogRepetitionComplete(currentConfigIdx, repsCompleted, _trialsPerTask);
 
-                    WebDataLogger.Instance.LogRepetitionComplete(currentConfigIdx, repsCompleted, configData.trialsPerConfig);
+                    repsCompleted++;
 
                     Invoke("CompleteTrial", 0.5f);
                     return true;
@@ -273,26 +266,16 @@ public class rewardManager : MonoBehaviour
                     }
                 }            
 
-                if (repsCompleted == configData.trialsPerConfig - 1) //V: code need to return to reward A in the last repetition of a configuration in order to increase the reps completed
+                // V: if we have collected last reward (C/D/A), then return to A to complete the trial
+                if (nextRewardIdx >= rewardsToCollect || nextRewardIdx < 0)
                 {
-                    if (nextRewardIdx >= rewardsToCollect || nextRewardIdx < 0)
-                    {
-                        Debug.Log("return to A");
-                        returnToA = true;
-                        nextRewardIdx = config.IsBackw ? config.rewardPositions.Count - 1 : 0;
-                        shortestPath = CalculateShortestPath(
-                            player.transform.position,
-                            config.rewardPositions[nextRewardIdx].ToVector3()
-                        );
-                    }
-                } else if (nextRewardIdx >= rewardsToCollect || nextRewardIdx < 0)
-                {
-                    player.inputEnabled = false;
-                    repsCompleted++;
-
-                    WebDataLogger.Instance.LogRepetitionComplete(currentConfigIdx, repsCompleted, configData.trialsPerConfig);
-
-                    Invoke("CompleteTrial", 0.5f);
+                    Debug.Log("return to A");
+                    returnToA = true;
+                    nextRewardIdx = config.IsBackw ? config.rewardPositions.Count - 1 : 0;
+                    shortestPath = CalculateShortestPath(
+                        player.transform.position,
+                        config.rewardPositions[nextRewardIdx].ToVector3()
+                    );
                 }
                 
                 return true;  
@@ -324,11 +307,11 @@ public class rewardManager : MonoBehaviour
     {
         // Cue is hidden in ResetTrial() or StartNextConfigForFreeNav() after delay
 
-        if (repsCompleted >= configData.trialsPerConfig)  
+        if (repsCompleted >= _trialsPerTask)  
         {
-            if (currentConfigIdx < configData.configurations.Count - 1)
+            if (currentConfigIdx < _activeTasks.Count - 1)
             {
-                Debug.Log($"{configData.configurations[currentConfigIdx].configName} complete!");
+                Debug.Log($"{_activeTasks[currentConfigIdx].configName} complete!");
                 currentConfigIdx++;
                 repsCompleted = 0;
 
@@ -397,9 +380,19 @@ public class rewardManager : MonoBehaviour
     
     void ResetTrial()
     {
+        //V: add log that A has been found in the current trial (sanity check: time should be the same as logging of immeditely preceding row)
+        WebDataLogger.Instance.LogRewardEvent(
+            "onset",
+            currentRewardObjects[0].transform.position,
+            "A",
+            0,
+            currentConfigIdx,
+            "A"
+        );
+        
         HideAllRewards();
         HideCue();
-        nextRewardIdx = GetStartIndex();
+        nextRewardIdx = config.IsBackw ? config.rewardPositions.Count - 2 : 1; // V: next reward to find is B, so transition for zero-shot is included in each trial
         lastShownRewardIdx = -1;
         returnToA = false;
 
@@ -411,7 +404,7 @@ public class rewardManager : MonoBehaviour
         );
         player.stepCount = 0;
 
-        Debug.Log($"Starting trial {repsCompleted + 1}/{configData.trialsPerConfig} of Config {currentConfigIdx}");
+        Debug.Log($"Starting trial {repsCompleted + 1}/{_trialsPerTask} of Config {currentConfigIdx}");
     }
 
     public void ShowReward(int index)
