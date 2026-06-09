@@ -40,6 +40,13 @@
           }, 500);
         }
 
+        // Catch ABCD_TIMEOUT
+        if (text.indexOf('ABCD_TIMEOUT') !== -1) {
+          setTimeout(function() {
+              try { window.parent.postMessage('ABCD_TIMEOUT', '*'); } catch(e) {}
+              originalLog('[postMessage bridge] ABCD_TIMEOUT sent to parent.');
+          }, 500);
+        }
         // Catch [WEBGL_DATA] logs as fallback if jslib isn't active yet
         if (text.indexOf('[WEBGL_DATA]') !== -1) {
           try {

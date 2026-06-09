@@ -486,6 +486,12 @@ public class WebDataLogger : MonoBehaviour
         });
     }
 
+    public void TriggerInactivityTimeout()
+    {
+        Debug.Log("ABCD_TIMEOUT");
+    }
+
+
     public void LogKeyPressEvent(string key, Vector3 playerPos, int round, int rep) //V: maybe more needed for fMRI (movements and space bar presses are already recorderd)
     {
         SendToJavaScript(new KeyPressData
