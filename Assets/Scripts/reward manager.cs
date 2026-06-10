@@ -258,7 +258,7 @@ public class rewardManager : MonoBehaviour
                     Debug.Log($"shortest path = {shortestPath}");
                 }
 
-                if (config.configName.StartsWith("ABC") && !config.configName.StartsWith("ABCD"))
+                if (config.taskType == "ABC")
                 {
                     if (repsCompleted != 0 && nextRewardIdx == 1)
                     {
@@ -362,7 +362,7 @@ public class rewardManager : MonoBehaviour
 
         player.CameraController.SetupGameplayCameras();
 
-        if (isABCScene && config.configName.StartsWith("ABC") && !config.configName.StartsWith("ABCD"))
+        if (isABCScene && config.taskType == "ABC")
             StartCoroutine(ShowCue());
         else
             player.inputEnabled = true;

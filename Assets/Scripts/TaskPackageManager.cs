@@ -13,9 +13,10 @@ public class GridPosition
 public class TaskConfig
 {
     public string configName;
+    public string taskType;
     public int taskPart;
     public List<GridPosition> rewardPositions;
-    public bool IsBackw => configName != null && configName.StartsWith("backw");
+    public bool IsBackw => taskType != null && taskType.StartsWith("backw");
 }
 
 [System.Serializable]
