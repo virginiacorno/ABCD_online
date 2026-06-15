@@ -44,7 +44,6 @@ public class FreeNavigationCamera : MonoBehaviour, ICameraController
     {
         //V: Show the player during the transition
         player.GetComponent<Renderer>().enabled = true;
-        WebDataLogger.Instance.LogCameraTransition("start", player.transform.position);
 
         //V: Read start position/rotation from the minimap camera (set in Inspector)
         Vector3 startPos = miniMapCamera.transform.position;
@@ -75,7 +74,6 @@ public class FreeNavigationCamera : MonoBehaviour, ICameraController
         miniMapCamera.transform.position = startPos;
         miniMapCamera.transform.rotation = startRot;
 
-        WebDataLogger.Instance.LogCameraTransition("complete", player.transform.position);
         SetupGameplayCameras(); //V: call the setup gameplay cameras to start playing
     }
 

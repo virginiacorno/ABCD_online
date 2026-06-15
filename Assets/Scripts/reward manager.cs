@@ -202,12 +202,16 @@ public class rewardManager : MonoBehaviour
             
             // log all space bar presses
             WebDataLogger.Instance.LogRewardCheck(
-                playerPosition,
-                currReward.transform.position,
-                ((char)('A' + nextRewardIdx)).ToString(),
-                config.configName,
+                playerPosition.x, playerPosition.z,
+                currReward.transform.position.x, currReward.transform.position.z,
                 distance,
+                GetCurrentState(),
+                config.IsBackw ? "backw" : "forw",
+                repsCompleted,
+                config.configName,
                 atRewardLocation,
+                atRewardLocation ? WebDataLogger.Timestamp() : 0,
+                0f,
                 atRewardLocation ? player.stepCount : 0,
                 atRewardLocation ? shortestPath : 0,
                 atRewardLocation ? player.stepCount == shortestPath : false
@@ -547,5 +551,15 @@ public class rewardManager : MonoBehaviour
         return Mathf.RoundToInt(
             (Mathf.Abs(from.x - to.x) + Mathf.Abs(from.z - to.z)) / 10.3f //V: divide by step size to get number of my steps needed
         );
+    }
+
+    public string GetCurrentState()
+    {
+        return ((char)('A' + nextRewardIdx)).ToString();
+    }
+
+    public Vector3 GetCurrentRewardPosition()
+    {
+        return GetRewardWorldPosition(nextRewardIdx);
     }
 }

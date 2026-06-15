@@ -1,9 +1,7 @@
-
 using UnityEngine;
 using System.Runtime.InteropServices;
 using System;
 
-/// Logs ABCD task data & sends it to JavaScript for Pavlovia storage
 public class WebDataLogger : MonoBehaviour
 {
     private static WebDataLogger _instance;
@@ -13,267 +11,95 @@ public class WebDataLogger : MonoBehaviour
     private static extern void SendDataToJS(string jsonData);
 
     [System.Serializable]
-    public class KeyPressData
+    private class LogRow
     {
-        public string event_type = "key_press";
-        public string participant;
+        // Always populated — matches fMRI column names
+        public string event_type;
+        public string participant_id;
         public string study_id;
         public string session_id;
-        public string session = "001";
         public string date;
-        public int round;
-        public int rep;
+        public double t_global;
+
+        // Screen
+        public string screen_name;
+        public string phase;
+
+        // Movement / step — all names match fMRI
+        public string movement_type;
         public double t_step_press_global;
         public double t_step_press_curr_run;
-        public string key_pressed;
-        public int key_index;
+        public float length_step;
         public float curr_loc_x;
         public float curr_loc_z;
-        public double t_global;
-    }
-
-    [System.Serializable]
-    public class MovementData
-    {
-        public string event_type = "movement";
-        public string participant;
-        public string study_id;
-        public string session_id;
-        public string session = "001";
-        public string date;
-        public int round;
-        public int rep;
-        public bool movement_complete = true;
-        public float curr_loc_x;
-        public float curr_loc_y;
-        public float curr_loc_z;
-        public string phase;
-        public float from_x;
-        public float from_y;
-        public float from_z;
-        public float to_x;
-        public float to_z;
-        public double t_global;
-        public double t_step_from_start_currrun;
+        public float to_loc_x;
+        public float to_loc_z;
         public double t_step_end_global;
-        public double t_step_tglobal;
-        public double length_step;
-        public string direction;
-        public float curr_rew_x;
-        public float curr_rew_y;
-        public float curr_rew_z;
-        public string type;
-        public string state;
-        public bool found_reward;
-        public int movement_index;
-    }
+        public string key_pressed; // online addition
 
-    [System.Serializable]
-    public class ScreenEventData
-    {
-        public string event_type = "screen_event";
-        public string participant;
-        public string study_id;
-        public string session_id;
-        public string session = "001";
-        public string date;
-        public string screen_name;
-        public string phase; // "onset", "button_press", "offset"
-        public double t_global;
-    }
-
-    [System.Serializable]
-    public class CueData
-    {
-        public string event_type = "cue_displayed";
-        public string participant;
-        public string study_id;
-        public string session_id;
-        public string session = "001";
-        public string date;
-        public int round;
-        public int rep;
-        public double cue_time;
-        public double cue_time_global;
-    }
-
-    [System.Serializable]
-    public class RotationData
-    {
-        public string event_type = "rotation";
-        public string participant; public string study_id; public string session_id;
-        public string session = "001"; public string date;
-        public string phase; // "start" or "complete"
+        // Rotation — matches fMRI
         public float from_rotation;
         public float to_rotation;
-        public double t_global;
-    }
 
-    [System.Serializable]
-    public class CameraTransitionData
-    {
-        public string event_type = "camera_transition";
-        public string participant; public string study_id; public string session_id;
-        public string session = "001"; public string date;
-        public string phase; // "start" or "complete"
-        public float player_loc_x;
-        public float player_loc_z;
-        public double t_global;
-    }
+        // Reward position and trial context — matches fMRI
+        public float curr_rew_x;
+        public float curr_rew_z;
+        public string state;
+        public string type;
+        public int trial;
+        public string task;
 
-    [System.Serializable]
-    public class ConfigurationStartData
-    {
-        public string event_type = "configuration_start";
-        public string participant; public string study_id; public string session_id;
-        public string session = "001"; public string date;
+        // Reward check — matches fMRI; online adds player_steps/shortest_path/is_optimal
+        public float distance;
+        public double t_reward_start;
+        public float reward_delay;
+        public bool reward_found;
+        public int player_steps;
+        public int shortest_path;
+        public bool is_optimal;
+
+        // Online-only events below
+        public string reward_letter;
+        public int reward_index;
         public int config_index;
-        public string config_name;
-        public double t_global;
-    }
-
-    [System.Serializable]
-    public class MemorizationData
-    {
-        public string event_type = "memorization";
-        public string participant; public string study_id; public string session_id;
-        public string session = "001"; public string date;
-        public string phase; // "start", "rep_start", "reward_onset", "reward_offset", "complete"
         public string config_name;
         public int repetition_number;
         public float display_time;
         public float pause_time;
-        public string reward_letter;
-        public int reward_index;
-        public double t_global;
-    }
-
-    [System.Serializable]
-    public class BackwardWarningData
-    {
-        public string event_type = "backward_warning";
-        public string participant; public string study_id; public string session_id;
-        public string session = "001"; public string date;
-        public string phase; // "onset" or "offset"
-        public string config_name;
-        public double t_global;
-    }
-
-    [System.Serializable]
-    public class GamePhaseStartData
-    {
-        public string event_type = "game_phase_start";
-        public string participant; public string study_id; public string session_id;
-        public string session = "001"; public string date;
         public float start_loc_x;
         public float start_loc_y;
         public float start_loc_z;
-        public string config_name;
-        public int config_index;
-        public double t_global;
-    }
-
-    [System.Serializable]
-    public class RewardCheckData
-    {
-        public string event_type = "reward_check";
-        public string participant; public string study_id; public string session_id;
-        public string session = "001"; public string date;
-        public float player_loc_x;
-        public float player_loc_z;
-        public float rew_loc_x;
-        public float rew_loc_z;
-        public string state;
-        public string config_name;
-        public float distance_to_reward;
-        public bool found_reward;
-        public int player_steps;
-        public int shortest_path;
-        public bool is_optimal;
-        public double t_global;
-    }
-
-    [System.Serializable]
-    public class RewardEventData
-    {
-        public string event_type = "reward_event";
-        public string participant; public string study_id; public string session_id;
-        public string session = "001"; public string date;
-        public string phase; // "onset" or "offset"
-        public float rew_loc_x;
-        public float rew_loc_z;
-        public string reward_letter;
-        public int reward_index;
-        public int config_index;
-        public string state;
-        public double t_global;
-    }
-
-    [System.Serializable]
-    public class RepetitionCompleteData
-    {
-        public string event_type = "repetition_complete";
-        public string participant; public string study_id; public string session_id;
-        public string session = "001"; public string date;
-        public int config_index;
-        public int reps_completed;
-        public int total_reps;
-        public double t_global;
-    }
-
-    [System.Serializable]
-    public class TrialStartEventData
-    {
-        public string event_type = "trial_start";
-        public string participant; public string study_id; public string session_id;
-        public string session = "001"; public string date;
-        public int config_index;
-        public string config_name;
+        public double cue_time;
+        public int rep;
         public string trial_type;
         public string sequence;
-        public int rep;
-        public double t_global;
-    }
-
-    [System.Serializable]
-    public class PackageAssignmentData
-    {
-        public string event_type = "package_assignment";
-        public string participant; public string study_id; public string session_id;
-        public string session = "001"; public string date;
+        public int reps_completed;
+        public int total_reps;
         public int package_number;
         public string package_id;
-        public double t_global;
     }
 
-    // Participant info (set from JavaScript on startup)
     private string participantId;
     private string studyId;
     private string sessionId;
-    
-    // Trial tracking
-    private double trialStartTime;
-    private double experimentStartTime;
+    public double TrialStartTime { get; private set; }
+
+    void Awake()
+    {
+        if (_instance != null && _instance != this) { Destroy(gameObject); return; }
+        _instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
 
     void Start()
     {
         Debug.Log("[DATALOGGER] WebDataLogger started, bridge ready.");
     }
-    
-    void Awake()
-    {
-        if (_instance != null && _instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-        _instance = this;
-        DontDestroyOnLoad(gameObject);
-        experimentStartTime = GetUnixTimestamp();
-    }
+
+    public static double Timestamp() => (DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds;
 
     /// Called from JavaScript to initialise participant info
-    /// e.g., unityInstance.SendMessage('DataLogger', 'SetParticipantInfo', 'PID|STUDY|SESSION');
+    /// e.g., unityInstance.SendMessage('WebDataLogger', 'SetParticipantInfo', 'PID|STUDY|SESSION');
     public void SetParticipantInfo(string info)
     {
         string[] parts = info.Split('|');
@@ -288,202 +114,135 @@ public class WebDataLogger : MonoBehaviour
 
     public void LogScreenEvent(string screenName, string phase)
     {
-        var data = new ScreenEventData
-        {
-            participant = participantId,
-            study_id = studyId,
-            session_id = sessionId,
-            date = DateTime.UtcNow.ToString("yyyy-MM-dd"),
-            screen_name = screenName,
-            phase = phase,
-            t_global = GetUnixTimestamp()
-        };
-
-        SendToJavaScript(data);
+        Send(new LogRow { event_type = "screen", screen_name = screenName, phase = phase });
     }
 
-    public void LogCue(int round, int rep) //V: maybe more relevant for fMRI (tho player is blocked for a few seconds)
+    // Matches fMRI LogStep — called once when movement completes, carrying both press and end times
+    public void LogStep(double tStepPressGlobal, double tStepPressCurrRun,
+        float currLocX, float currLocZ, float toLocX, float toLocZ, double tStepEndGlobal,
+        float currRewX, float currRewZ, string state, string type, int trial, string task,
+        string keyPressed = "up")
     {
-        double now = GetUnixTimestamp();
-
-        var data = new CueData
+        Send(new LogRow
         {
-            participant = participantId,
-            study_id = studyId,
-            session_id = sessionId,
-            date = DateTime.UtcNow.ToString("yyyy-MM-dd"),
-            round = round,
-            rep = rep,
-            cue_time = now - trialStartTime,
-            cue_time_global = now
-        };
-
-        SendToJavaScript(data);
-    }
-
-    public void LogRotation(string phase, float fromRotation, float toRotation)
-    {
-        SendToJavaScript(new RotationData
-        {
-            participant = participantId, study_id = studyId, session_id = sessionId,
-            date = DateTime.UtcNow.ToString("yyyy-MM-dd"),
-            phase = phase, from_rotation = fromRotation, to_rotation = toRotation,
-            t_global = GetUnixTimestamp()
+            event_type = "movement", movement_type = "step",
+            t_step_press_global = tStepPressGlobal, t_step_press_curr_run = tStepPressCurrRun,
+            curr_loc_x = currLocX, curr_loc_z = currLocZ,
+            to_loc_x = toLocX, to_loc_z = toLocZ,
+            t_step_end_global = tStepEndGlobal,
+            curr_rew_x = currRewX, curr_rew_z = currRewZ,
+            state = state, type = type, trial = trial, task = task,
+            key_pressed = keyPressed
         });
     }
 
-    public void LogCameraTransition(string phase, Vector3 playerPos) //V: maybe more relevant to fMRI
+    // Matches fMRI LogRotation — called once when rotation completes
+    public void LogRotation(double rotPressGlobal, double rotPressCurrRun,
+        float fromRotation, float toRotation,
+        float currLocX, float currLocZ, float currRewX, float currRewZ,
+        string state, string type, int trial, string task, string keyPressed = "")
     {
-        SendToJavaScript(new CameraTransitionData
+        Send(new LogRow
         {
-            participant = participantId, study_id = studyId, session_id = sessionId,
-            date = DateTime.UtcNow.ToString("yyyy-MM-dd"),
-            phase = phase, player_loc_x = playerPos.x, player_loc_z = playerPos.z,
-            t_global = GetUnixTimestamp()
+            event_type = "movement", movement_type = "rotation",
+            t_step_press_global = rotPressGlobal, t_step_press_curr_run = rotPressCurrRun,
+            from_rotation = fromRotation, to_rotation = toRotation,
+            curr_loc_x = currLocX, curr_loc_z = currLocZ,
+            curr_rew_x = currRewX, curr_rew_z = currRewZ,
+            state = state, type = type, trial = trial, task = task,
+            key_pressed = keyPressed
         });
     }
 
-    public void LogConfigurationStart(int configIndex, string configName)
+    // Matches fMRI LogRewardCheck signature
+    public void LogRewardCheck(float currLocX, float currLocZ, float currRewX, float currRewZ,
+        float distance, string state, string type, int trial, string task,
+        bool rewardFound, double tRewardStart = 0, float rewardDelay = 0f,
+        int playerSteps = 0, int shortestPath = 0, bool isOptimal = false)
     {
-        SendToJavaScript(new ConfigurationStartData
+        Send(new LogRow
         {
-            participant = participantId, study_id = studyId, session_id = sessionId,
-            date = DateTime.UtcNow.ToString("yyyy-MM-dd"),
-            config_index = configIndex, config_name = configName,
-            t_global = GetUnixTimestamp()
-        });
-    }
-
-    public void LogMemorizationStart(string configName, int repetitions) //V: maybe more relevant to fMRI
-    {
-        SendToJavaScript(new MemorizationData
-        {
-            participant = participantId, study_id = studyId, session_id = sessionId,
-            date = DateTime.UtcNow.ToString("yyyy-MM-dd"),
-            phase = "start", config_name = configName, repetition_number = repetitions,
-            t_global = GetUnixTimestamp()
-        });
-    }
-
-    public void LogMemorizationRepetition(int repNum, float displayTime, float pauseTime) //V: maybe more relevant to fMRI
-    {
-        SendToJavaScript(new MemorizationData
-        {
-            participant = participantId, study_id = studyId, session_id = sessionId,
-            date = DateTime.UtcNow.ToString("yyyy-MM-dd"),
-            phase = "rep_start", repetition_number = repNum,
-            display_time = displayTime, pause_time = pauseTime,
-            t_global = GetUnixTimestamp()
-        });
-    }
-
-    public void LogMemorizationReward(string rewardPhase, string rewardLetter, int rewardIndex, int repNum) //V: maybe more relevant to fMRI
-    {
-        SendToJavaScript(new MemorizationData
-        {
-            participant = participantId, study_id = studyId, session_id = sessionId,
-            date = DateTime.UtcNow.ToString("yyyy-MM-dd"),
-            phase = rewardPhase, reward_letter = rewardLetter,
-            reward_index = rewardIndex, repetition_number = repNum,
-            t_global = GetUnixTimestamp()
-        });
-    }
-
-    public void LogMemorizationComplete() //V: maybe more relevant to fMRI
-    {
-        SendToJavaScript(new MemorizationData
-        {
-            participant = participantId, study_id = studyId, session_id = sessionId,
-            date = DateTime.UtcNow.ToString("yyyy-MM-dd"),
-            phase = "complete", t_global = GetUnixTimestamp()
-        });
-    }
-
-    public void LogBackwardWarning(string phase, string configName) //V: maybe more relevant to fMRI + no backw tasks in this pilot
-    {
-        SendToJavaScript(new BackwardWarningData
-        {
-            participant = participantId, study_id = studyId, session_id = sessionId,
-            date = DateTime.UtcNow.ToString("yyyy-MM-dd"),
-            phase = phase, config_name = configName,
-            t_global = GetUnixTimestamp()
-        });
-    }
-
-    public void LogGamePhaseStart(Vector3 startPos, string configName, int configIndex)
-    {
-        trialStartTime = GetUnixTimestamp();
-        SendToJavaScript(new GamePhaseStartData
-        {
-            participant = participantId, study_id = studyId, session_id = sessionId,
-            date = DateTime.UtcNow.ToString("yyyy-MM-dd"),
-            start_loc_x = startPos.x, start_loc_y = startPos.y, start_loc_z = startPos.z,
-            config_name = configName, config_index = configIndex,
-            t_global = GetUnixTimestamp()
-        });
-    }
-
-    public void LogRewardCheck(Vector3 playerPos, Vector3 rewPos, string state, string configName, float distance, bool found, int playerSteps = 0, int shortestPath = 0, bool isOptimal = false)
-    {
-        SendToJavaScript(new RewardCheckData
-        {
-            participant = participantId, study_id = studyId, session_id = sessionId,
-            date = DateTime.UtcNow.ToString("yyyy-MM-dd"),
-            player_loc_x = playerPos.x, player_loc_z = playerPos.z,
-            rew_loc_x = rewPos.x, rew_loc_z = rewPos.z,
-            state = state, config_name = configName,
-            distance_to_reward = distance, found_reward = found,
-            player_steps = playerSteps, shortest_path = shortestPath, is_optimal = isOptimal,
-            t_global = GetUnixTimestamp()
+            event_type = "reward_check",
+            curr_loc_x = currLocX, curr_loc_z = currLocZ,
+            curr_rew_x = currRewX, curr_rew_z = currRewZ,
+            distance = distance, state = state, type = type, trial = trial, task = task,
+            reward_found = rewardFound, t_reward_start = tRewardStart, reward_delay = rewardDelay,
+            player_steps = playerSteps, shortest_path = shortestPath, is_optimal = isOptimal
         });
     }
 
     public void LogRewardEvent(string phase, Vector3 rewPos, string rewardLetter, int rewardIndex, int configIndex, string state)
     {
-        SendToJavaScript(new RewardEventData
+        Send(new LogRow
         {
-            participant = participantId, study_id = studyId, session_id = sessionId,
-            date = DateTime.UtcNow.ToString("yyyy-MM-dd"),
-            phase = phase, rew_loc_x = rewPos.x, rew_loc_z = rewPos.z,
+            event_type = "reward_event", phase = phase,
+            curr_rew_x = rewPos.x, curr_rew_z = rewPos.z,
             reward_letter = rewardLetter, reward_index = rewardIndex,
-            config_index = configIndex, state = state,
-            t_global = GetUnixTimestamp()
+            config_index = configIndex, state = state
+        });
+    }
+
+    public void LogCue(int round, int rep)
+    {
+        double now = Timestamp();
+        Send(new LogRow { event_type = "cue_displayed", trial = round, rep = rep, cue_time = now - TrialStartTime });
+    }
+
+    public void LogConfigurationStart(int configIndex, string configName)
+    {
+        Send(new LogRow { event_type = "configuration_start", config_index = configIndex, config_name = configName });
+    }
+
+    public void LogMemorizationStart(string configName, int repetitions)
+    {
+        Send(new LogRow { event_type = "memorization", phase = "start", config_name = configName, repetition_number = repetitions });
+    }
+
+    public void LogMemorizationRepetition(int repNum, float displayTime, float pauseTime)
+    {
+        Send(new LogRow { event_type = "memorization", phase = "rep_start", repetition_number = repNum, display_time = displayTime, pause_time = pauseTime });
+    }
+
+    public void LogMemorizationReward(string rewardPhase, string rewardLetter, int rewardIndex, int repNum)
+    {
+        Send(new LogRow { event_type = "memorization", phase = rewardPhase, reward_letter = rewardLetter, reward_index = rewardIndex, repetition_number = repNum });
+    }
+
+    public void LogMemorizationComplete()
+    {
+        Send(new LogRow { event_type = "memorization", phase = "complete" });
+    }
+
+    public void LogBackwardWarning(string phase, string configName)
+    {
+        Send(new LogRow { event_type = "backward_warning", phase = phase, config_name = configName });
+    }
+
+    public void LogGamePhaseStart(Vector3 startPos, string configName, int configIndex)
+    {
+        TrialStartTime = Timestamp();
+        Send(new LogRow
+        {
+            event_type = "game_phase_start",
+            start_loc_x = startPos.x, start_loc_y = startPos.y, start_loc_z = startPos.z,
+            config_name = configName, config_index = configIndex
         });
     }
 
     public void LogRepetitionComplete(int configIndex, int repsCompleted, int totalReps)
     {
-        SendToJavaScript(new RepetitionCompleteData
-        {
-            participant = participantId, study_id = studyId, session_id = sessionId,
-            date = DateTime.UtcNow.ToString("yyyy-MM-dd"),
-            config_index = configIndex, reps_completed = repsCompleted, total_reps = totalReps,
-            t_global = GetUnixTimestamp()
-        });
+        Send(new LogRow { event_type = "repetition_complete", config_index = configIndex, reps_completed = repsCompleted, total_reps = totalReps });
     }
 
     public void LogTrialStartEvent(int configIndex, string configName, string trialType, string sequence, int rep)
     {
-        trialStartTime = GetUnixTimestamp();
-        SendToJavaScript(new TrialStartEventData
-        {
-            participant = participantId, study_id = studyId, session_id = sessionId,
-            date = DateTime.UtcNow.ToString("yyyy-MM-dd"),
-            config_index = configIndex, config_name = configName,
-            trial_type = trialType, sequence = sequence, rep = rep,
-            t_global = GetUnixTimestamp()
-        });
+        TrialStartTime = Timestamp();
+        Send(new LogRow { event_type = "trial_start", config_index = configIndex, config_name = configName, trial_type = trialType, sequence = sequence, rep = rep });
     }
 
     public void LogPackageAssignment(int packageNumber, string packageId)
     {
-        SendToJavaScript(new PackageAssignmentData
-        {
-            participant = participantId, study_id = studyId, session_id = sessionId,
-            date = DateTime.UtcNow.ToString("yyyy-MM-dd"),
-            package_number = packageNumber, package_id = packageId,
-            t_global = GetUnixTimestamp()
-        });
+        Send(new LogRow { event_type = "package_assignment", package_number = packageNumber, package_id = packageId });
     }
 
     public void TriggerInactivityTimeout()
@@ -491,42 +250,17 @@ public class WebDataLogger : MonoBehaviour
         Debug.Log("ABCD_TIMEOUT");
     }
 
-
-    public void LogKeyPressEvent(string key, Vector3 playerPos, int round, int rep) //V: maybe more needed for fMRI (movements and space bar presses are already recorderd)
+    private void Send(LogRow row)
     {
-        SendToJavaScript(new KeyPressData
-        {
-            participant = participantId, study_id = studyId, session_id = sessionId,
-            date = DateTime.UtcNow.ToString("yyyy-MM-dd"),
-            key_pressed = key,
-            t_global = GetUnixTimestamp(),
-            curr_loc_x = playerPos.x,
-            curr_loc_z = playerPos.z,
-            round = round,
-            rep = rep
-        });
-    }
+        row.participant_id = participantId;
+        row.study_id = studyId;
+        row.session_id = sessionId;
+        row.date = DateTime.UtcNow.ToString("yyyy-MM-dd");
+        row.t_global = Timestamp();
 
-    public void LogMovementEvent(string phase, Vector3 fromPos, Vector3 toPos)
-    {
-        SendToJavaScript(new MovementData
-        {
-            participant = participantId, study_id = studyId, session_id = sessionId,
-            date = DateTime.UtcNow.ToString("yyyy-MM-dd"),
-            phase = phase,
-            from_x = fromPos.x, from_z = fromPos.z,
-            to_x = toPos.x, to_z = toPos.z,
-            t_global = GetUnixTimestamp()
-        });
-    }
-
-    private void SendToJavaScript(object data)
-    {
-        string json = JsonUtility.ToJson(data);
-
+        string json = JsonUtility.ToJson(row);
         Debug.Log("[WEBGL_DATA] " + json);
-        
-        Debug.Log("[WEBGL_CALL] about to call SendDataToJS: " + json);
+
         #if UNITY_WEBGL && !UNITY_EDITOR
         try
         {
@@ -536,13 +270,6 @@ public class WebDataLogger : MonoBehaviour
         {
             Debug.LogError($"Failed to send data to JS: {e.Message}");
         }
-        #else
-        Debug.Log($"[WEBGL DATA]: {json}");
         #endif
-    }
-
-    private double GetUnixTimestamp()
-    {
-        return (DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds;
     }
 }
