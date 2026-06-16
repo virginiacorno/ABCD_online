@@ -47,7 +47,7 @@ public class TaskPackageManager : MonoBehaviour
     void Start()
     {
         if (WebDataLogger.Instance != null)
-            WebDataLogger.Instance.LogPackageAssignment(AssignedPackageNumber, GetPackageId());
+            WebDataLogger.Instance.SetPackageNumber(AssignedPackageNumber);
     }
 
     void AssignAndLoadPackage()

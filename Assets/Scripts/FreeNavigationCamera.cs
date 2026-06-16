@@ -20,7 +20,6 @@ public class FreeNavigationCamera : MonoBehaviour, ICameraController
         _startGameAfterTransition = true;
         //V: Load the new configuration in reward manager
         rewardManager.LoadConfiguration(configIndex);
-        WebDataLogger.Instance.LogConfigurationStart(configIndex, rewardManager.GetCurrentConfigName());
 
         //V: set cameras in position to begin the smooth transition
         firstPersonCamera.enabled = false;
@@ -90,7 +89,7 @@ public class FreeNavigationCamera : MonoBehaviour, ICameraController
         if (_startGameAfterTransition)
         {
             _startGameAfterTransition = false;
-            WebDataLogger.Instance.LogGamePhaseStart(player.transform.position, rewardManager.GetCurrentConfigName(), rewardManager.GetCurrentConfigIndex());
+            WebDataLogger.Instance.TrialStartTime = WebDataLogger.Timestamp();
             rewardManager.StartNextConfigForFreeNav();
         }
     }
