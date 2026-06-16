@@ -179,6 +179,7 @@ public class rewardManager : MonoBehaviour
     public bool RewardFound(Vector3 playerPosition)
     {
         if (isPractice) return false;
+        if (_activeTasks == null || _activeTasks.Count == 0) return false;
 
         Debug.Log($"Player position: {playerPosition}");
         Debug.Log($"nextRewardIdx: {nextRewardIdx}");
