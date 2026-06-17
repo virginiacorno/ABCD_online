@@ -18,6 +18,7 @@ public class rewardManager : MonoBehaviour
     
     private List<TaskConfig> _activeTasks;
     private int _trialsPerTask;
+    private int _currentPart;
 
     private GameObject[] currentRewardObjects; //V: array containing sequence of rewards
     private int currentConfigIdx = 0;
@@ -88,16 +89,26 @@ public class rewardManager : MonoBehaviour
         }
         else if (TaskPackageManager.Instance != null)
         {
-            int targetPart = isABCScene ? 2 : 1;
-            _activeTasks = targetPart == 1
+            _currentPart = isABCScene ? 2 : 1;
+            _activeTasks = _currentPart == 1
                 ? TaskPackageManager.Instance.GetPart1Tasks()
                 : TaskPackageManager.Instance.GetPart2Tasks();
             _trialsPerTask = TaskPackageManager.Instance.Data.trialsPerTask;
-            Debug.Log($"[rewardManager] Loaded {_activeTasks.Count} tasks for part {targetPart}");
+            Debug.Log($"[rewardManager] Loaded {_activeTasks.Count} tasks for part {_currentPart}");
         }
         else
         {
+            #if UNITY_EDITOR
+            Debug.LogWarning("[rewardManager] No TaskPackageManager — auto-creating for direct scene testing");
+            new GameObject("TaskPackageManager [Debug]").AddComponent<TaskPackageManager>();
+            _currentPart = isABCScene ? 2 : 1;
+            _activeTasks = _currentPart == 1
+                ? TaskPackageManager.Instance.GetPart1Tasks()
+                : TaskPackageManager.Instance.GetPart2Tasks();
+            _trialsPerTask = TaskPackageManager.Instance.Data.trialsPerTask;
+            #else
             Debug.LogError("[rewardManager] No TaskPackageManager found!");
+            #endif
         }
     }
 

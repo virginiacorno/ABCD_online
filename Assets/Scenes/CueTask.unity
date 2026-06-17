@@ -5737,6 +5737,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9fec44af957da4d72ba94b1493af21e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WebDataLogger
+  saveToCSV: 1
 --- !u!4 &1794326262
 Transform:
   m_ObjectHideFlags: 0
@@ -6329,7 +6330,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::rewardManager
   configurationFile: {fileID: 4900000, guid: 63410d264799d45f481cf3104eaa4c88, type: 3}
   rewardPrefab: {fileID: 8944818978998613366, guid: 724d237596c0e5f4e96db63a4516d303, type: 3}
-  instructionManager: {fileID: 0}
+  instructionManager: {fileID: 757205549}
   repsCompleted: 0
   cueObject: {fileID: 1202984419}
   player: {fileID: 918918312}

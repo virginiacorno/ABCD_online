@@ -1,11 +1,22 @@
 using UnityEngine;
 using System.Runtime.InteropServices;
 using System;
+using System.IO;
 
 public class WebDataLogger : MonoBehaviour
 {
     private static WebDataLogger _instance;
-    public static WebDataLogger Instance => _instance;
+    public static WebDataLogger Instance
+    {
+        get
+        {
+            #if UNITY_EDITOR
+            if (_instance == null)
+                _instance = new GameObject("WebDataLogger [Debug]").AddComponent<WebDataLogger>();
+            #endif
+            return _instance;
+        }
+    }
 
     [DllImport("__Internal")]
     private static extern void SendDataToJS(string jsonData);
@@ -61,17 +72,33 @@ public class WebDataLogger : MonoBehaviour
         public int package_number;
     }
 
+    [Header("Debug")]
+    public bool saveToCSV = false;
+
     private string participantId;
     private string studyId;
     private string sessionId;
     private int packageNumber;
     public double TrialStartTime { get; set; }
 
+    #if UNITY_EDITOR
+    private string _csvPath;
+    private bool _csvHeaderWritten = false;
+    #endif
+
     void Awake()
     {
         if (_instance != null && _instance != this) { Destroy(gameObject); return; }
         _instance = this;
         DontDestroyOnLoad(gameObject);
+
+        #if UNITY_EDITOR
+        if (saveToCSV)
+        {
+            string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            _csvPath = Path.Combine(Application.dataPath, "..", $"debug_log_{timestamp}.csv");
+        }
+        #endif
     }
 
     void Start()
@@ -173,6 +200,11 @@ public class WebDataLogger : MonoBehaviour
         string json = JsonUtility.ToJson(row);
         Debug.Log("[WEBGL_DATA] " + json);
 
+        #if UNITY_EDITOR
+        if (saveToCSV)
+            AppendToCSV(row);
+        #endif
+
         #if UNITY_WEBGL && !UNITY_EDITOR
         try
         {
@@ -184,4 +216,34 @@ public class WebDataLogger : MonoBehaviour
         }
         #endif
     }
+
+    #if UNITY_EDITOR
+    void AppendToCSV(LogRow row)
+    {
+        if (!_csvHeaderWritten)
+        {
+            string header = "event_type,participant_id,study_id,session_id,date,t_global," +
+                            "screen_name,phase," +
+                            "movement_type,t_step_press_global,t_step_press_curr_run,length_step," +
+                            "curr_loc_x,curr_loc_z,to_loc_x,to_loc_z,t_step_end_global,key_pressed," +
+                            "from_rotation,to_rotation," +
+                            "curr_rew_x,curr_rew_z,state,type,trial,task," +
+                            "distance,t_reward_start,reward_delay,reward_found," +
+                            "player_steps,shortest_path,is_optimal,package_number";
+            File.WriteAllText(_csvPath, header + "\n");
+            _csvHeaderWritten = true;
+            Debug.Log($"[DATALOGGER] CSV logging to: {_csvPath}");
+        }
+
+        string line = $"{row.event_type},{row.participant_id},{row.study_id},{row.session_id},{row.date},{row.t_global}," +
+                      $"{row.screen_name},{row.phase}," +
+                      $"{row.movement_type},{row.t_step_press_global},{row.t_step_press_curr_run},{row.length_step}," +
+                      $"{row.curr_loc_x},{row.curr_loc_z},{row.to_loc_x},{row.to_loc_z},{row.t_step_end_global},{row.key_pressed}," +
+                      $"{row.from_rotation},{row.to_rotation}," +
+                      $"{row.curr_rew_x},{row.curr_rew_z},{row.state},{row.type},{row.trial},{row.task}," +
+                      $"{row.distance},{row.t_reward_start},{row.reward_delay},{row.reward_found}," +
+                      $"{row.player_steps},{row.shortest_path},{row.is_optimal},{row.package_number}";
+        File.AppendAllText(_csvPath, line + "\n");
+    }
+    #endif
 }
