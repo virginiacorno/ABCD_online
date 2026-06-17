@@ -18,6 +18,7 @@ public class rewardManager : MonoBehaviour
     
     private List<TaskConfig> _activeTasks;
     private int _trialsPerTask;
+    private int _currentPart;
 
     private GameObject[] currentRewardObjects; //V: array containing sequence of rewards
     private int currentConfigIdx = 0;
@@ -88,16 +89,26 @@ public class rewardManager : MonoBehaviour
         }
         else if (TaskPackageManager.Instance != null)
         {
-            int targetPart = isABCScene ? 2 : 1;
-            _activeTasks = targetPart == 1
+            _currentPart = isABCScene ? 2 : 1;
+            _activeTasks = _currentPart == 1
                 ? TaskPackageManager.Instance.GetPart1Tasks()
                 : TaskPackageManager.Instance.GetPart2Tasks();
             _trialsPerTask = TaskPackageManager.Instance.Data.trialsPerTask;
-            Debug.Log($"[rewardManager] Loaded {_activeTasks.Count} tasks for part {targetPart}");
+            Debug.Log($"[rewardManager] Loaded {_activeTasks.Count} tasks for part {_currentPart}");
         }
         else
         {
+            #if UNITY_EDITOR
+            Debug.LogWarning("[rewardManager] No TaskPackageManager — auto-creating for direct scene testing");
+            new GameObject("TaskPackageManager [Debug]").AddComponent<TaskPackageManager>();
+            _currentPart = isABCScene ? 2 : 1;
+            _activeTasks = _currentPart == 1
+                ? TaskPackageManager.Instance.GetPart1Tasks()
+                : TaskPackageManager.Instance.GetPart2Tasks();
+            _trialsPerTask = TaskPackageManager.Instance.Data.trialsPerTask;
+            #else
             Debug.LogError("[rewardManager] No TaskPackageManager found!");
+            #endif
         }
     }
 
@@ -236,8 +247,6 @@ public class rewardManager : MonoBehaviour
                     lastShownRewardIdx = returnIdx;
 
                     player.inputEnabled = false;
-                    WebDataLogger.Instance.LogRepetitionComplete(currentConfigIdx, repsCompleted, _trialsPerTask);
-
                     repsCompleted++;
 
                     Invoke("CompleteTrial", 0.5f);
@@ -372,29 +381,11 @@ public class rewardManager : MonoBehaviour
         else
             player.inputEnabled = true;
 
-        WebDataLogger.Instance.LogTrialStartEvent(
-            currentConfigIdx,
-            GetCurrentConfigName(),
-            isABCScene ? "ABC" : "ABCD",
-            isABCScene ? "A-B-C" : "A-B-C-D",
-            repsCompleted
-        );
-
         Debug.Log($"Starting {config.configName}");
     }
     
     void ResetTrial()
     {
-        //V: add log that A has been found in the current trial (sanity check: time should be the same as logging of immeditely preceding row)
-        WebDataLogger.Instance.LogRewardEvent(
-            "onset",
-            currentRewardObjects[0].transform.position,
-            "A",
-            0,
-            currentConfigIdx,
-            "A"
-        );
-        
         HideAllRewards();
         HideCue();
         nextRewardIdx = config.IsBackw ? config.rewardPositions.Count - 2 : 1; // V: next reward to find is B, so transition for zero-shot is included in each trial
@@ -421,15 +412,6 @@ public class rewardManager : MonoBehaviour
             Debug.Log($"Showing reward at index {index}, name: {currentRewardObjects[index].name}");
             //Debug.Log($"Renderer before: {currentRewardObjects[index].GetComponent<Renderer>().enabled}");
 
-            WebDataLogger.Instance.LogRewardEvent(
-                "onset",
-                currentRewardObjects[index].transform.position,
-                ((char)('A' + index)).ToString(),
-                index,
-                currentConfigIdx,
-                ((char)('A' + index)).ToString()
-            );
-            
             //currentRewardObjects[index].GetComponent<Renderer>().enabled = true;
             currentRewardObjects[index].SetActive(true);
             Vector3 dir = -player.transform.forward;
@@ -448,15 +430,6 @@ public class rewardManager : MonoBehaviour
     {
         if (index >= 0 && index < currentRewardObjects.Length && currentRewardObjects[index] != null)
         {
-            WebDataLogger.Instance.LogRewardEvent(
-                "offset",
-                currentRewardObjects[index].transform.position,
-                ((char)('A' + index)).ToString(),
-                index,
-                currentConfigIdx,
-                ((char)('A' + index)).ToString()
-            );
-
             //currentRewardObjects[index].GetComponent<Renderer>().enabled = false;
             currentRewardObjects[index].SetActive(false);
         }
@@ -494,7 +467,6 @@ public class rewardManager : MonoBehaviour
         if (cueObject != null)
         {
             cueObject.SetActive(true);
-            WebDataLogger.Instance.LogCue(currentConfigIdx, repsCompleted);
         }
         //V: block the player for 2 seconds so sure we see the cue
         yield return new WaitForSeconds(2f);
