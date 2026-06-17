@@ -1,7 +1,8 @@
 {
   "tasks": [
     {
-      "configName": "ABCD",
+      "configName": "A8",
+      "taskType": "ABCD",
       "taskPart": 1,
       "rewardPositions": [
         {
@@ -10,12 +11,12 @@
           "z": 25.6
         },
         {
-          "x": -5.3,
+          "x": 15.3,
           "y": 1,
           "z": 25.6
         },
         {
-          "x": -5.3,
+          "x": 5,
           "y": 1,
           "z": 15.3
         },
@@ -27,66 +28,10 @@
       ]
     },
     {
-      "configName": "ABCD",
+      "configName": "B8",
+      "taskType": "ABCD",
       "taskPart": 1,
       "rewardPositions": [
-        {
-          "x": -5.3,
-          "y": 1,
-          "z": 15.3
-        },
-        {
-          "x": -5.3,
-          "y": 1,
-          "z": 5
-        },
-        {
-          "x": 15.3,
-          "y": 1,
-          "z": 5
-        },
-        {
-          "x": 15.3,
-          "y": 1,
-          "z": 15.3
-        }
-      ]
-    },
-    {
-      "configName": "ABCD",
-      "taskPart": 1,
-      "rewardPositions": [
-        {
-          "x": -5.3,
-          "y": 1,
-          "z": 25.6
-        },
-        {
-          "x": 5,
-          "y": 1,
-          "z": 15.3
-        },
-        {
-          "x": 5,
-          "y": 1,
-          "z": 5
-        },
-        {
-          "x": 15.3,
-          "y": 1,
-          "z": 15.3
-        }
-      ]
-    },
-    {
-      "configName": "ABCD",
-      "taskPart": 1,
-      "rewardPositions": [
-        {
-          "x": -5.3,
-          "y": 1,
-          "z": 5
-        },
         {
           "x": 15.3,
           "y": 1,
@@ -98,14 +43,20 @@
           "z": 5
         },
         {
-          "x": 15.3,
+          "x": -5.3,
+          "y": 1,
+          "z": 15.3
+        },
+        {
+          "x": 5,
           "y": 1,
           "z": 25.6
         }
       ]
     },
     {
-      "configName": "ABCD",
+      "configName": "C8",
+      "taskType": "ABCD",
       "taskPart": 1,
       "rewardPositions": [
         {
@@ -126,38 +77,35 @@
         {
           "x": -5.3,
           "y": 1,
-          "z": 5
+          "z": 15.3
         }
       ]
     },
     {
-      "configName": "ABCD",
-      "taskPart": 1,
+      "configName": "D8",
+      "taskType": "ABC",
+      "taskPart": 2,
       "rewardPositions": [
         {
-          "x": -5.3,
-          "y": 1,
-          "z": 15.3
-        },
-        {
           "x": 5,
           "y": 1,
-          "z": 15.3
-        },
-        {
-          "x": 5,
-          "y": 1,
-          "z": 25.6
+          "z": 5
         },
         {
           "x": 15.3,
           "y": 1,
-          "z": 25.6
+          "z": 5
+        },
+        {
+          "x": 5,
+          "y": 1,
+          "z": 15.3
         }
       ]
     },
     {
-      "configName": "ABCD",
+      "configName": "E8",
+      "taskType": "ABC",
       "taskPart": 2,
       "rewardPositions": [
         {
@@ -168,28 +116,24 @@
         {
           "x": 15.3,
           "y": 1,
-          "z": 5
+          "z": 25.6
         },
         {
-          "x": 5,
+          "x": -5.3,
           "y": 1,
-          "z": 5
-        },
-        {
-          "x": 5,
-          "y": 1,
-          "z": 15.3
+          "z": 25.6
         }
       ]
     },
     {
-      "configName": "ABCD",
+      "configName": "F8",
+      "taskType": "ABC",
       "taskPart": 2,
       "rewardPositions": [
         {
           "x": -5.3,
           "y": 1,
-          "z": 15.3
+          "z": 5
         },
         {
           "x": -5.3,
@@ -199,29 +143,15 @@
         {
           "x": 15.3,
           "y": 1,
-          "z": 5
-        },
-        {
-          "x": 5,
-          "y": 1,
-          "z": 5
+          "z": 25.6
         }
       ]
     },
     {
-      "configName": "ABCD",
+      "configName": "G8",
+      "taskType": "ABC",
       "taskPart": 2,
       "rewardPositions": [
-        {
-          "x": -5.3,
-          "y": 1,
-          "z": 5
-        },
-        {
-          "x": 5,
-          "y": 1,
-          "z": 25.6
-        },
         {
           "x": -5.3,
           "y": 1,
@@ -231,38 +161,45 @@
           "x": 15.3,
           "y": 1,
           "z": 5
-        }
-      ]
-    },
-    {
-      "configName": "ABC",
-      "taskPart": 2,
-      "rewardPositions": [
+        },
         {
           "x": 5,
           "y": 1,
           "z": 25.6
+        }
+      ]
+    },
+    {
+      "configName": "H8",
+      "taskType": "ABC",
+      "taskPart": 2,
+      "rewardPositions": [
+        {
+          "x": -5.3,
+          "y": 1,
+          "z": 5
         },
         {
           "x": 15.3,
           "y": 1,
-          "z": 25.6
+          "z": 5
         },
         {
-          "x": -5.3,
+          "x": 15.3,
           "y": 1,
-          "z": 25.6
+          "z": 15.3
         }
       ]
     },
     {
-      "configName": "ABC",
+      "configName": "I8",
+      "taskType": "ABCD",
       "taskPart": 2,
       "rewardPositions": [
         {
-          "x": 5,
+          "x": -5.3,
           "y": 1,
-          "z": 25.6
+          "z": 15.3
         },
         {
           "x": -5.3,
@@ -273,11 +210,120 @@
           "x": 5,
           "y": 1,
           "z": 5
+        },
+        {
+          "x": 15.3,
+          "y": 1,
+          "z": 5
         }
       ]
     },
     {
-      "configName": "ABC",
+      "configName": "J8",
+      "taskType": "ABCD",
+      "taskPart": 2,
+      "rewardPositions": [
+        {
+          "x": 15.3,
+          "y": 1,
+          "z": 5
+        },
+        {
+          "x": -5.3,
+          "y": 1,
+          "z": 25.6
+        },
+        {
+          "x": -5.3,
+          "y": 1,
+          "z": 5
+        },
+        {
+          "x": 5,
+          "y": 1,
+          "z": 5
+        }
+      ]
+    },
+    {
+      "configName": "K8",
+      "taskType": "ABC",
+      "taskPart": 2,
+      "rewardPositions": [
+        {
+          "x": 5,
+          "y": 1,
+          "z": 5
+        },
+        {
+          "x": 15.3,
+          "y": 1,
+          "z": 15.3
+        },
+        {
+          "x": -5.3,
+          "y": 1,
+          "z": 15.3
+        }
+      ]
+    },
+    {
+      "configName": "L8",
+      "taskType": "ABCD",
+      "taskPart": 2,
+      "rewardPositions": [
+        {
+          "x": 5,
+          "y": 1,
+          "z": 15.3
+        },
+        {
+          "x": -5.3,
+          "y": 1,
+          "z": 25.6
+        },
+        {
+          "x": 5,
+          "y": 1,
+          "z": 5
+        },
+        {
+          "x": 15.3,
+          "y": 1,
+          "z": 25.6
+        }
+      ]
+    },
+    {
+      "configName": "M8",
+      "taskType": "ABCD",
+      "taskPart": 2,
+      "rewardPositions": [
+        {
+          "x": -5.3,
+          "y": 1,
+          "z": 25.6
+        },
+        {
+          "x": -5.3,
+          "y": 1,
+          "z": 5
+        },
+        {
+          "x": 5,
+          "y": 1,
+          "z": 25.6
+        },
+        {
+          "x": 15.3,
+          "y": 1,
+          "z": 15.3
+        }
+      ]
+    },
+    {
+      "configName": "N8",
+      "taskType": "ABCD",
       "taskPart": 2,
       "rewardPositions": [
         {
@@ -287,6 +333,38 @@
         },
         {
           "x": 15.3,
+          "y": 1,
+          "z": 15.3
+        },
+        {
+          "x": -5.3,
+          "y": 1,
+          "z": 15.3
+        },
+        {
+          "x": 5,
+          "y": 1,
+          "z": 25.6
+        }
+      ]
+    },
+    {
+      "configName": "O8",
+      "taskType": "ABCD",
+      "taskPart": 2,
+      "rewardPositions": [
+        {
+          "x": 5,
+          "y": 1,
+          "z": 25.6
+        },
+        {
+          "x": -5.3,
+          "y": 1,
+          "z": 5
+        },
+        {
+          "x": 5,
           "y": 1,
           "z": 15.3
         },
