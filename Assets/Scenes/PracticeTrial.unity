@@ -2705,7 +2705,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::moveplayer
   gridStepSize: 10.3
-  moveSpeed: 7
+  moveSpeed: 4.78
   rotationSpeed: 100
   rewardManager: {fileID: 1972259391}
   _cameraController: {fileID: 206655264}
@@ -4101,6 +4101,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9fec44af957da4d72ba94b1493af21e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WebDataLogger
+  saveToCSV: 0
 --- !u!4 &1794326262
 Transform:
   m_ObjectHideFlags: 0

@@ -5,7 +5,7 @@ public class moveplayer : MonoBehaviour
     private float _rotationFrom;
 
     public float gridStepSize = 10.3f;
-    public float moveSpeed = 7.0f;
+    public float moveSpeed = 3.68f;
     public float rotationSpeed = 100f;
 
     public rewardManager rewardManager;
@@ -170,6 +170,7 @@ public class moveplayer : MonoBehaviour
         {
             transform.position = targetPosition;
             isMoving = false;
+            Debug.Log($"Step duration: {WebDataLogger.Timestamp() - _tStepPressGlobal:F3}s");
 
             Vector3 rewPos = rewardManager.GetCurrentRewardPosition();
             WebDataLogger.Instance.LogStep(
