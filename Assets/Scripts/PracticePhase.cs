@@ -1,44 +1,97 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections;
+using System.Collections.Generic;
 
 public class PracticePhase : MonoBehaviour
 {
     public moveplayer player;
     public rewardManager rewardManager;
     public CameraManager cameraManager;
+    public PracticeInstructionManager practiceInstructionManager;
 
     [Header("Practice Settings")]
     public int requiredStreak = 3;
     public float rewardDisplayTime = 2f;
     public float pauseBetweenTrials = 0.5f;
+    public float freeExplorationDuration = 120f; //V: how long should the free exploration trial be
+    public float freeExplorationMinimapDuration = 1.5f; //V: how long to show the top-down grid before transitioning to first person
     private int currentStreak = 0;
+    private List<int> _remainingTargets = new List<int>(); //V: which grid locations we haven't visited yet
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     public void StartPractice()
     {
+        rewardManager.LoadConfiguration(0);
         //V: ensure inputs are enabled but only possible to rotate (vs also moving)
         player.inputEnabled = false;
-        StartCoroutine(RunPracticeLoop());
+        StartCoroutine(RunFreeExploration());
     }
 
+    IEnumerator RunFreeExploration()
+    {
+        //V: show the grid from the top-down minimap view before transitioning to first person
+        cameraManager.SetupMemorizationCamera();
+        yield return new WaitForSeconds(freeExplorationMinimapDuration);
 
-    IEnumerator RunPracticeLoop()
+        yield return StartCoroutine(cameraManager.TransitionToFirstPerson()); //V: transition also enables the player renderer, moveplayer, and input
+
+        float elapsed = 0f;
+        while (elapsed < freeExplorationDuration)
+        {
+            var kb = Keyboard.current;
+            if (kb != null && player.inputEnabled && kb.spaceKey.wasPressedThisFrame) break;
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        player.inputEnabled = false;
+        practiceInstructionManager.ShowPracticePanel();
+    }
+
+    //V: function ensuring each position ID in the Practice json file is only appearing once, only repeat indices if we have visited them all
+    int GetNextTargetIdx()
+    {
+        if (_remainingTargets.Count == 0)
+        {
+            int count = rewardManager.GetCurrentRewardCount();
+            for (int i = 0; i < count; i++) _remainingTargets.Add(i);
+        }
+        int randomIdx = Random.Range(0, _remainingTargets.Count);
+        int targetIdx = _remainingTargets[randomIdx];
+        _remainingTargets.RemoveAt(randomIdx);
+        return targetIdx;
+    }
+
+    //V: random cell from the loaded config's own positions, excluding the current trial's target
+    Vector3 GetRandomStartPosition(int excludeIdx)
+    {
+        List<GridPosition> positions = rewardManager.config.rewardPositions;
+        List<int> candidates = new List<int>();
+        for (int i = 0; i < positions.Count; i++)
+        {
+            if (i != excludeIdx) candidates.Add(i);
+        }
+        int idx = candidates[Random.Range(0, candidates.Count)];
+        return positions[idx].ToVector3();
+    }
+
+    public IEnumerator RunPracticeLoop()
     {
         while (currentStreak < requiredStreak)
         {
             //V: show location of the reward
             cameraManager.SetupMemorizationCamera();
-            //V: set the player in the centre of the grid but keep it invisible
-            player.transform.position = new Vector3(5f, 1f, 15.3f);
+
+            //V: pick the next target, cycling through every cell once before repeating
+            int targetIdx = GetNextTargetIdx();
+
+            //V: set the player at a random cell that isn't this trial's target, but keep it invisible
+            player.transform.position = GetRandomStartPosition(targetIdx);
             player.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
             player.GetComponent<Renderer>().enabled = false;
 
-            //V; pick random reward from the configuration
-            int rewardCount = rewardManager.GetCurrentRewardCount();
-            int targetIdx = Random.Range(0, rewardCount);
-
-            //V: show the reward and then start 
+            //V: show the reward and then start
             rewardManager.ShowReward(targetIdx);
             yield return new WaitForSeconds(rewardDisplayTime);
             rewardManager.HideReward(targetIdx);
@@ -51,7 +104,7 @@ public class PracticePhase : MonoBehaviour
             while (!pressDetected)
             {
                 var kb = Keyboard.current;
-                if (kb != null && kb.spaceKey.wasPressedThisFrame) //V: if space bar was pressed, check if we are at reward location and either reset or increment the streak
+                if (kb != null && player.inputEnabled && kb.spaceKey.wasPressedThisFrame) //V: if space bar was pressed, check if we are at reward location and either reset or increment the streak
                 {
                     pressDetected = true; //V: stop inner loop for constantly checking keyboard presses
                     float dist = Vector3.Distance(
@@ -83,6 +136,7 @@ public class PracticePhase : MonoBehaviour
 
         //V: while loop breaks once we complete all required streaks, so then we can proceed to task
         Debug.Log("[Practice] Streak complete — loading task scene");
+        WebDataLogger.Instance.LogScreenEvent("practice_phase_end", "onset");
         SceneSequenceManager.Instance.GoToTask();
     }
 }

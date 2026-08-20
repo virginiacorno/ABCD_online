@@ -483,9 +483,9 @@ public class rewardManager : MonoBehaviour
         {
             Vector3[] allGridPositions = new Vector3[]
             {
-                new Vector3(-5.3f, 1f, 5f),    new Vector3(-5.3f, 1f, 15.3f), new Vector3(-5.3f, 1f, 25.6f),
-                new Vector3(5f,    1f, 5f),    new Vector3(5f,    1f, 15.3f), new Vector3(5f,    1f, 25.6f),
-                new Vector3(15.3f, 1f, 5f),    new Vector3(15.3f, 1f, 15.3f), new Vector3(15.3f, 1f, 25.6f)
+                new Vector3(-5.3f, 1f, -5.3f), new Vector3(-5.3f, 1f, 15.3f), new Vector3(-5.3f, 1f, 35.9f),
+                new Vector3(15.3f, 1f, -5.3f), new Vector3(15.3f, 1f, 15.3f), new Vector3(15.3f, 1f, 35.9f),
+                new Vector3(35.9f, 1f, -5.3f), new Vector3(35.9f, 1f, 15.3f), new Vector3(35.9f, 1f, 35.9f)
             };
 
             List<Vector3> rewardPositions = new List<Vector3>();

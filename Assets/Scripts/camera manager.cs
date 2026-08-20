@@ -22,7 +22,8 @@ public class CameraManager : MonoBehaviour, ICameraController
     public float[] rewardDisplayTime;
     public float[] pauseBetweenRewards;
     public float pauseBetweenSeq = 1f;
-    
+    public float delayBeforeFirstReward = 1f; //V: lets the top-down/minimap view show on its own before the first reward cue appears
+
     [Header("Memorization Settings")]
     public int memorizationRepetitions = 2;  //V: how many times to show the sequence
 
@@ -30,6 +31,12 @@ public class CameraManager : MonoBehaviour, ICameraController
     public float transitionDuration = 2.5f;  //V: seconds for the smooth camera transition
 
     public bool isPractice = false;
+
+    [Header("Minimap Poses")]
+    public Vector3 memorizationPosition = new Vector3(14.837112f, 24.499376f, -25.248386f);
+    public Vector3 memorizationRotationEuler = new Vector3(38.09f, 0f, 0f);
+    public Vector3 cornerPosition = new Vector3(15f, 58f, 15f);
+    public Vector3 cornerRotationEuler = new Vector3(90f, 0f, 0f);
 
     void Start()
     {
@@ -69,24 +76,35 @@ public class CameraManager : MonoBehaviour, ICameraController
         backwWarning.SetActive(false);
         firstPersonCamera.enabled = false;
         miniMapCamera.enabled = true;
-        
+
+        //V: always start memorization from its own fixed pose, regardless of whatever pose gameplay left it at
+        miniMapCamera.transform.position = memorizationPosition;
+        miniMapCamera.transform.rotation = Quaternion.Euler(memorizationRotationEuler);
+
         //V: Put camera as full screen to show rewards
         miniMapCamera.rect = new Rect(0, 0, 1, 1);
         miniMapCamera.depth = 0;
     }
-    
+
     public void SetupGameplayCameras()
     {
         firstPersonCamera.enabled = true;
         miniMapCamera.enabled = true;
 
+        //V: force minimap back to its own fixed pose for the corner view, independent of whatever pose memorization used
+        miniMapCamera.transform.position = cornerPosition;
+        miniMapCamera.transform.rotation = Quaternion.Euler(cornerRotationEuler);
+
         //V: Mini-map in top-right corner
-        miniMapCamera.rect = new Rect(0.75f, 0.75f, 0.25f, 0.25f);
+        miniMapCamera.rect = new Rect(0.85f, 0.75f, 0.20f, 0.25f); //V: (x, y, width, height)
         miniMapCamera.depth = 1;
     }
-    
+
     IEnumerator ShowRewardSequence()
     {
+        //V: give the participant a moment on the top-down view before the first reward appears
+        yield return new WaitForSeconds(delayBeforeFirstReward);
+
         //V: Show sequence multiple times
         for (int repetition = 0; repetition < memorizationRepetitions; repetition++)
         {
