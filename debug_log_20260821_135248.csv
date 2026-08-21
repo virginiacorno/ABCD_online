@@ -1,0 +1,2 @@
+event_type,participant_id,study_id,session_id,date,t_global,screen_name,phase,movement_type,t_step_press_global,t_step_press_curr_run,length_step,curr_loc_x,curr_loc_z,to_loc_x,to_loc_z,t_step_end_global,key_pressed,from_rotation,to_rotation,curr_rew_x,curr_rew_z,state,type,trial,task,distance,t_reward_start,reward_delay,reward_found,player_steps,shortest_path,is_optimal,package_number
+screen,,,,2026-08-21,1787316768.40033,instruction,onset,,0,0,0,0,0,0,0,0,,0,0,0,0,,,0,,0,0,0,False,0,0,False,0

@@ -3,9 +3,12 @@ using UnityEngine;
 public class ClassicTaskInstructionManager : TaskInstructionManagerBase
 {
     public CameraManager cameraManager;
+    public GameObject endPanel;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        endPanel.SetActive(false);
         ShowInstruction(); //V: call this as it is bc working mechanism already accurate in other script
     }
 
@@ -59,9 +62,24 @@ public class ClassicTaskInstructionManager : TaskInstructionManagerBase
         rewardManager.StartNextConfiguration();
     }
 
-    //V: call loading of the next scene instead of displaying an end screen
     public override void EndScreen()
     {
+        movementPanel.SetActive(false);
+        instructionPanel.SetActive(false);
+        feedbackPanel.SetActive(false);
+        newSeqPanel.SetActive(false);
+        endPanel.SetActive(true);
+        Time.timeScale = 0f;
+        WebDataLogger.Instance.LogScreenEvent("end", "onset");
+    }
+
+    //V: call loading of the next scene when people press the button
+    public void OnEndButton()
+    {
+        WebDataLogger.Instance.LogScreenEvent("end", "button_press");
+        WebDataLogger.Instance.LogScreenEvent("end", "offset");
+        Time.timeScale = 1f;
         SceneSequenceManager.Instance.GoToCueTask();
     }
+
 }

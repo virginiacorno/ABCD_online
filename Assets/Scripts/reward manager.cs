@@ -434,7 +434,17 @@ public class rewardManager : MonoBehaviour
             currentRewardObjects[index].SetActive(false);
         }
     }
-    
+
+    //V: hide the currently-shown reward immediately, e.g. the moment the player presses a key to move on
+    public void HideLastShownReward()
+    {
+        if (lastShownRewardIdx >= 0)
+        {
+            HideReward(lastShownRewardIdx);
+            lastShownRewardIdx = -1;
+        }
+    }
+
     void HideAllRewards()
     {
         if (currentRewardObjects != null)

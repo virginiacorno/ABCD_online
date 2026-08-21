@@ -9,7 +9,9 @@ public class CueTaskInstructionManager : TaskInstructionManagerBase
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        ShowCuePanel();
+        endPanel.SetActive(false);
+        cuePanel.SetActive(false);
+        ShowInstruction();
     }
 
     public void ShowCuePanel()
@@ -41,7 +43,7 @@ public class CueTaskInstructionManager : TaskInstructionManagerBase
         newSeqPanel.SetActive(false);
         endPanel.SetActive(false);
 
-        ShowInstruction();
+        ShowMovementInstruction();
     }
 
     public override void OnInstructionButton()
@@ -56,7 +58,7 @@ public class CueTaskInstructionManager : TaskInstructionManagerBase
         endPanel.SetActive(false);
         Time.timeScale = 1f;
 
-        ShowMovementInstruction();
+        ShowCuePanel();
     }
 
     public override void OnMovementButton()

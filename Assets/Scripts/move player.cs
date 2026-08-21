@@ -5,7 +5,7 @@ public class moveplayer : MonoBehaviour
     private float _rotationFrom;
 
     public float gridStepSize = 10.3f;
-    public float moveSpeed = 3.68f;
+    public float moveSpeed = 7f;
     public float rotationSpeed = 100f;
 
     public rewardManager rewardManager;
@@ -82,6 +82,7 @@ public class moveplayer : MonoBehaviour
                 stepCount++;
             }
             CameraController.DisableMiniMap();
+            rewardManager.HideLastShownReward();
         }
         else if (keyboard.downArrowKey.wasPressedThisFrame)
         {
@@ -89,6 +90,7 @@ public class moveplayer : MonoBehaviour
             _keyPressed = "down";
             SetTarget(180f);
             CameraController.DisableMiniMap();
+            rewardManager.HideLastShownReward();
         }
         else if (keyboard.leftArrowKey.wasPressedThisFrame)
         {
@@ -96,6 +98,7 @@ public class moveplayer : MonoBehaviour
             _keyPressed = "left";
             SetTarget(-90f);
             CameraController.DisableMiniMap();
+            rewardManager.HideLastShownReward();
         }
         else if (keyboard.rightArrowKey.wasPressedThisFrame)
         {
@@ -103,6 +106,7 @@ public class moveplayer : MonoBehaviour
             _keyPressed = "right";
             SetTarget(90f);
             CameraController.DisableMiniMap();
+            rewardManager.HideLastShownReward();
         }
     }
 
